@@ -335,7 +335,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
           <div id="aviso-partida" style="background:#fff8e6;border:1px solid #f5d87a;border-radius:6px;padding:10px 14px;font-size:12px;color:#856404;margin-bottom:12px;display:none;">
             Selecciona una partida primero para filtrar los conceptos disponibles.
           </div>
-          <div style="overflow-x:auto;"><table class="tbl">
+          <div style="overflow-x:auto;width:100%;"><table class="tbl">
             <thead><tr>
               <th class="nc">#</th>
               <th style="min-width:220px">Descripción del Servicio</th>
@@ -608,9 +608,9 @@ function acOpen(tipo) {
   const listEl = document.getElementById('acl-'+tipo);
   let items = [];
   if(tipo==='unidad') items = UNIDADES.slice(0,20).map(u=>({main:u.unidad,sub:'JCU: '+u.jcu+' · '+u.ui+'-'+u.cc,val:u.unidad,data:u}));
-  else if(tipo==='elaboro') items = USUARIOS_CAT.map(u=>({main:u.nombre,sub:u.tipo,val:u.nombre,data:u}));
-  else if(tipo==='partida') items = PARTIDAS.map(p=>({main:p.clave,sub:p.descripcion+' · '+p.tipo,val:p.clave,data:p}));
-  else if(tipo==='prov') items = PROVEEDORES_CAT.slice(0,20).map(p=>({main:p.razon_social,sub:'RFC: '+p.rfc+(p.ret_isr?' · ISR: Sí':''),val:p.razon_social,data:p}));
+  else if(tipo==='elaboro') items = USUARIOS_CAT.map(u=>({main:u.nombre,sub:'',val:u.nombre,data:u}));
+  else if(tipo==='partida') items = PARTIDAS.map(p=>({main:p.clave,sub:p.descripcion,val:p.clave,data:p}));
+  else if(tipo==='prov') items = PROVEEDORES_CAT.slice(0,20).map(p=>({main:p.razon_social,sub:'RFC: '+p.rfc,val:p.razon_social,data:p}));
   if(!items.length){acSearch(tipo,val);return;}
   // Filtrar si hay texto
   if(val.length>0){
@@ -638,15 +638,15 @@ function acSearch(tipo, val) {
     }));
   } else if(tipo==='elaboro'){
     items=USUARIOS_CAT.filter(u=>matchAll||u.nombre.toLowerCase().includes(q)).slice(0,25).map(u=>({
-      main:u.nombre, sub:u.tipo, val:u.nombre, data:u
+      main:u.nombre, sub:'', val:u.nombre, data:u
     }));
   } else if(tipo==='partida'){
     items=PARTIDAS.filter(p=>matchAll||p.clave.toLowerCase().includes(q)||p.descripcion.toLowerCase().includes(q)).slice(0,21).map(p=>({
-      main:p.clave, sub:p.descripcion+' · '+p.tipo, val:p.clave, data:p
+      main:p.clave, sub:p.descripcion, val:p.clave, data:p
     }));
   } else if(tipo==='prov'){
     items=PROVEEDORES_CAT.filter(p=>matchAll||p.razon_social.toLowerCase().includes(q)||p.rfc.toLowerCase().includes(q)).slice(0,20).map(p=>({
-      main:p.razon_social, sub:'RFC: '+p.rfc+(p.ret_isr?' · ISR: Sí':''), val:p.razon_social, data:p
+      main:p.razon_social, sub:'RFC: '+p.rfc, val:p.razon_social, data:p
     }));
   } else if(tipo==='concepto'){
     const idx=parseInt(document.getElementById('acl-'+tipo)?.dataset?.idx||0);
@@ -740,12 +740,12 @@ function renderConceptos() {
           <div class="ac-list" id="acl-concepto-${i}" data-idx="${i}"></div>
         </div>
       </td>
-      <td><input type="number" value="${c.cantSol||''}" min="0" placeholder="0"
-        onchange="setCantSol(${i},+this.value)" style="text-align:center"></td>
-      <td><input type="number" value="${c.cantEnt||''}" min="0" placeholder="0" id="cant-ent-${i}"
-        onchange="setCantEnt(${i},+this.value)" style="text-align:center"></td>
-      <td><input type="number" value="${c.pu||''}" min="0" step="0.01" placeholder="0.00"
-        onchange="conceptos[${i}].pu=+this.value;calcImp(${i})"></td>
+      <td style="width:65px"><input type="number" value="${c.cantSol||''}" min="0" placeholder="0"
+        onchange="setCantSol(${i},+this.value)" style="text-align:center;width:60px;padding:6px 4px"></td>
+      <td style="width:65px"><input type="number" value="${c.cantEnt||''}" min="0" placeholder="0" id="cant-ent-${i}"
+        onchange="setCantEnt(${i},+this.value)" style="text-align:center;width:60px;padding:6px 4px"></td>
+      <td style="width:90px"><input type="number" value="${c.pu||''}" min="0" step="0.01" placeholder="0.00"
+        onchange="conceptos[${i}].pu=+this.value;calcImp(${i})" style="text-align:right;width:85px;padding:6px 4px"></td>
       <td style="text-align:center"><span class="r5-dot ${c.ret5?'on':''}" id="r5-${i}" title="${c.ret5?'Aplica ret. 5/1000':'No aplica ret. 5/1000'}"></span></td>
       <td class="ic" id="imp-${i}">${fmt(c.imp)}</td>`;
     tb.appendChild(tr);
