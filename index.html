@@ -67,8 +67,8 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .folio-lbl{font-size:9px;opacity:0.8;text-transform:uppercase;letter-spacing:0.08em;}
 
 /* SECCIONES */
-.section{background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:14px;box-shadow:var(--sombra);overflow:hidden;}
-.sh{padding:9px 18px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:white;}
+.section{background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:14px;box-shadow:var(--sombra);}
+.sh{padding:9px 18px;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:white;border-radius:var(--radio) var(--radio) 0 0;}
 .sh-v{background:var(--verde);}
 .sh-g{background:var(--guinda);}
 .sh-a{background:var(--azul);}
@@ -89,7 +89,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .ac-wrap{position:relative;}
 .ac-input{width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;transition:border-color 0.2s,background 0.2s;}
 .ac-input:focus{border-color:var(--verde);background:white;}
-.ac-list{position:absolute;top:100%;left:0;min-width:320px;width:max-content;max-width:500px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:500;max-height:240px;overflow-y:auto;display:none;}
+.ac-list{position:fixed;min-width:320px;width:max-content;max-width:500px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:9999;max-height:240px;overflow-y:auto;display:none;}
 .ac-list.open{display:block;}
 .ac-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--gris);transition:background 0.15s;}
 .ac-item:hover{background:var(--verde-l);}
@@ -599,8 +599,31 @@ function mostrarApp() {
 
 // ══ AUTOCOMPLETE ENGINE ══
 function acOpen(tipo) {
-  acSearch(tipo, document.getElementById('ac-'+tipo).value || ' ');
-  document.getElementById('ac-'+tipo).select();
+  const inp = document.getElementById('ac-'+tipo);
+  const val = inp.value || '';
+  // Pasar valor especial para mostrar todo
+  const listEl = document.getElementById('acl-'+tipo);
+  let items = [];
+  if(tipo==='unidad') items = UNIDADES.slice(0,20).map(u=>({main:u.unidad,sub:'JCU: '+u.jcu+' · '+u.ui+'-'+u.cc,val:u.unidad,data:u}));
+  else if(tipo==='elaboro') items = USUARIOS_CAT.map(u=>({main:u.nombre,sub:u.tipo,val:u.nombre,data:u}));
+  else if(tipo==='partida') items = PARTIDAS.map(p=>({main:p.clave,sub:p.descripcion+' · '+p.tipo,val:p.clave,data:p}));
+  else if(tipo==='prov') items = PROVEEDORES_CAT.slice(0,20).map(p=>({main:p.razon_social,sub:'RFC: '+p.rfc+(p.ret_isr?' · ISR: Sí':''),val:p.razon_social,data:p}));
+  if(!items.length){acSearch(tipo,val);return;}
+  // Filtrar si hay texto
+  if(val.length>0){
+    const q=val.toLowerCase();
+    items=items.filter(it=>it.main.toLowerCase().includes(q)||it.sub.toLowerCase().includes(q));
+  }
+  if(!items.length){listEl.classList.remove('open');return;}
+  listEl.innerHTML=items.map((it,i)=>'<div class="ac-item" onclick="acSelect(''+tipo+'','+i+')" data-idx="'+i+'"><div class="ac-main">'+it.main+'</div>'+(it.sub?'<div class="ac-sub">'+it.sub+'</div>':'')+'</div>').join('');
+  listEl._items=items;
+  // Posicionar dropdown con position:fixed
+  const rect = inp.getBoundingClientRect();
+  listEl.style.top = (rect.bottom + window.scrollY) + 'px';
+  listEl.style.left = rect.left + 'px';
+  listEl.style.width = Math.max(320, rect.width) + 'px';
+  listEl.classList.add('open');
+  setTimeout(()=>inp.select(),50);
 }
 function acSearch(tipo, val) {
   const listEl = document.getElementById('acl-'+tipo);
@@ -639,6 +662,14 @@ function acSearch(tipo, val) {
     ${it.sub?`<div class="ac-sub">${it.sub}</div>`:''}
   </div>`).join('');
   listEl._items=items;
+  // Posicionar con fixed
+  const inp2 = document.getElementById('ac-'+tipo);
+  if(inp2){
+    const r = inp2.getBoundingClientRect();
+    listEl.style.top = (r.bottom + window.scrollY) + 'px';
+    listEl.style.left = r.left + 'px';
+    listEl.style.width = Math.max(320, r.width) + 'px';
+  }
   listEl.classList.add('open');
 }
 
