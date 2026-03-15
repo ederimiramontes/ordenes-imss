@@ -749,18 +749,28 @@ document.addEventListener('click', e=>{
 });
 
 // ══ FORM INIT ══
-function initForm() {
-  folioActual=genFolio();
+async function initForm() {
+  folioActual=await genFolio();
   document.getElementById('folio-display').textContent=folioActual;
   const hoy=new Date().toISOString().split('T')[0];
   document.getElementById('f-sol').value=hoy;
   document.getElementById('f-emi').value=hoy;
   renderConceptos();
 }
-function genFolio(){
+async function genFolio(){
   const y=new Date().getFullYear();
-  const rand=Math.floor(Math.random()*90000)+10000;
-  return y+''+rand;
+  // Obtener el último folio del año actual para hacer consecutivo
+  const {data}=await sb.from('ordenes')
+    .select('folio')
+    .like('folio', y+'%')
+    .order('folio', {ascending:false})
+    .limit(1);
+  let siguiente = 1;
+  if(data && data.length > 0){
+    const ultimo = parseInt(data[0].folio.toString().slice(4)) || 0;
+    siguiente = ultimo + 1;
+  }
+  return y + String(siguiente).padStart(4,'0');
 }
 function calcTiempo(){
   const i=document.getElementById('f-ini').value,t=document.getElementById('f-ter').value;
@@ -912,11 +922,11 @@ async function guardarOrden(){
   toast('✓ Orden '+folioActual+' guardada');
   btn.innerHTML='Guardar Orden';btn.disabled=false;
   cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();
-  setTimeout(nuevaOrden,1500);
+  setTimeout(()=>nuevaOrden(),1500);
 }
 
-function nuevaOrden(){
-  folioActual=genFolio();
+async function nuevaOrden(){
+  folioActual=await genFolio();
   document.getElementById('folio-display').textContent=folioActual;
   selUnidad=null;selPartida=null;selProv=null;
   ['ac-unidad','ac-partida','ac-prov','especialidad','subespecialidad','destino',
