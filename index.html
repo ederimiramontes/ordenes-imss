@@ -604,10 +604,10 @@ function acOpen(tipo) {
 }
 function acSearch(tipo, val) {
   const listEl = document.getElementById('acl-'+tipo);
-  const q = (val||'').trim();
-  if(!q && val !== ' '){listEl.classList.remove('open');return;}
-  const q=val===(' ')?' ':val.toLowerCase();
-  const matchAll = q===' ';
+  const raw = (val||'').trim();
+  const matchAll = !raw || val === ' ';
+  const q = matchAll ? '' : val.toLowerCase();
+  if(!raw && val !== ' '){listEl.classList.remove('open');return;}
   let items=[];
   if(tipo==='unidad'){
     items=UNIDADES.filter(u=>matchAll||u.unidad.toLowerCase().includes(q)||String(u.jcu).includes(q)).slice(0,20).map(u=>({
