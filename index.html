@@ -72,7 +72,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .sh-v{background:var(--verde);}
 .sh-g{background:var(--guinda);}
 .sh-a{background:var(--azul);}
-.sb{padding:16px 18px;overflow-x:auto;}
+.sb{padding:16px 18px;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
@@ -86,10 +86,10 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .field textarea{resize:vertical;min-height:60px;}
 
 /* AUTOCOMPLETE */
-.ac-wrap{position:relative;}
+.ac-wrap{position:relative;overflow:visible;}
 .ac-input{width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;transition:border-color 0.2s,background 0.2s;}
 .ac-input:focus{border-color:var(--verde);background:white;}
-.ac-list{position:fixed;min-width:360px;width:max-content;max-width:520px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:9999;max-height:280px;overflow-y:auto;display:none;}
+.ac-list{position:absolute;top:calc(100% + 2px);left:0;min-width:100%;width:max-content;max-width:520px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:9999;max-height:260px;overflow-y:auto;display:none;}
 .ac-list.open{display:block;}
 .ac-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--gris);transition:background 0.15s;}
 .ac-item:hover{background:var(--verde-l);}
@@ -276,11 +276,10 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
               </select>
             </div>
             <div class="field c2"><label>Elaboró <span class="req">*</span></label>
-              <div class="ac-wrap" style="display:flex;align-items:center;gap:0;">
-  <input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off" style="flex:1;border-radius:var(--radio) 0 0 var(--radio);">
-  <button type="button" onclick="acOpen('elaboro')" style="padding:8px 10px;border:1.5px solid var(--borde);border-left:none;border-radius:0 var(--radio) var(--radio) 0;background:var(--gris);cursor:pointer;color:var(--sec);font-size:12px;">▼</button>
-  <div class="ac-list" id="acl-elaboro"></div>
-</div>
+              <div class="ac-wrap">
+                <input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" placeholder="— Seleccionar o escribir nombre —" oninput="acSearch('elaboro',this.value)" autocomplete="off">
+                <div class="ac-list" id="acl-elaboro"></div>
+              </div>
             </div>
             <div class="field"><label>Folio Depto.</label><input type="text" id="f-depto" placeholder="DEP-001"></div>
             <div class="field"><label>Folio SEGADE</label><input type="text" id="f-segade" placeholder="SEG-001"></div>
@@ -336,7 +335,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
           <div id="aviso-partida" style="background:#fff8e6;border:1px solid #f5d87a;border-radius:6px;padding:10px 14px;font-size:12px;color:#856404;margin-bottom:12px;display:none;">
             Selecciona una partida primero para filtrar los conceptos disponibles.
           </div>
-          <table class="tbl">
+          <div style="overflow-x:auto;"><table class="tbl">
             <thead><tr>
               <th class="nc">#</th>
               <th style="min-width:260px">Descripción del Servicio</th>
@@ -347,7 +346,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
               <th style="width:105px">Importe</th>
             </tr></thead>
             <tbody id="conceptos-tbody"></tbody>
-          </table>
+          </table></div>
           <div class="totales">
             <div class="tg">
               <div class="tl">Subtotal:</div><div class="tv" id="t-sub">$0.00</div>
@@ -525,6 +524,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
   </div>
 </div>
 
+<!-- Contenedor global para dropdowns - evita problemas de overflow/flex -->
+<div id="global-dropdowns" style="position:fixed;top:0;left:0;z-index:9999;pointer-events:none;">
+  <div style="pointer-events:auto;" id="floating-dropdown"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -581,8 +585,8 @@ function mostrarApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   document.getElementById('topbar-user').textContent=userNombre;
-  document.getElementById('ac-elaboro').value=userNombre;
-  selElaboro=userNombre;
+  document.getElementById('ac-elaboro').value='';
+  selElaboro='';
   document.getElementById('firma-prov-nombre').textContent='Proveedor';
   if(isAdmin){
     document.getElementById('role-badge').style.display='inline-block';
@@ -623,12 +627,6 @@ function acOpen(tipo) {
     return '<div class="ac-item" onclick="acSelect(\'' + tipo + '\',' + i + ')" data-idx="' + i + '"><div class="ac-main">' + it.main + '</div>' + (it.sub ? '<div class="ac-sub">' + it.sub + '</div>' : '') + '</div>';
   }).join('');
   listEl._items=items;
-  // Posicionar dropdown con position:fixed (sin scrollY - fixed es relativo al viewport)
-  const rect = inp.getBoundingClientRect();
-  listEl.style.top = rect.bottom + 'px';
-  listEl.style.left = rect.left + 'px';
-  listEl.style.width = Math.max(360, rect.width) + 'px';
-  listEl.style.maxHeight = '260px';
   listEl.classList.add('open');
   setTimeout(()=>inp.select(),50);
 }
@@ -669,15 +667,6 @@ function acSearch(tipo, val) {
     ${it.sub?`<div class="ac-sub">${it.sub}</div>`:''}
   </div>`).join('');
   listEl._items=items;
-  // Posicionar con fixed (relativo al viewport)
-  const inp2 = document.getElementById('ac-'+tipo);
-  if(inp2){
-    const r = inp2.getBoundingClientRect();
-    listEl.style.top = r.bottom + 'px';
-    listEl.style.left = r.left + 'px';
-    listEl.style.width = Math.max(360, r.width) + 'px';
-    listEl.style.maxHeight = '260px';
-  }
   listEl.classList.add('open');
 }
 
