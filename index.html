@@ -487,25 +487,64 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
     </div>
   </div>
 
-  <!-- TAB USUARIOS (Admin) -->
+  <!-- TAB USUARIOS -->
   <div id="content-usuarios" style="display:none;">
     <div class="page">
-      <div class="section">
-        <div class="sh sh-g">Gestión de usuarios</div>
+
+      <!-- Solicitar nuevo usuario - cualquiera puede ver, solo admin crea directamente -->
+      <div class="section" id="sec-solicitar-usr">
+        <div class="sh sh-v">Solicitar nuevo usuario</div>
         <div class="sb">
-          <div class="g3" style="margin-bottom:16px;">
-            <div class="field"><label>Nombre completo</label><input type="text" id="nu-nombre" placeholder="ING. NOMBRE APELLIDO"></div>
-            <div class="field"><label>Correo electrónico</label><input type="email" id="nu-email" placeholder="correo@dominio.com"></div>
-            <div class="field"><label>Contraseña temporal</label><input type="password" id="nu-pass" placeholder="Mínimo 6 caracteres"></div>
-            <div class="field"><label>Rol</label><select id="nu-rol"><option value="Usuario">Usuario</option><option value="Admin">Administrador</option></select></div>
-            <div class="field c2" style="justify-content:flex-end;flex-direction:row;align-items:flex-end;">
-              <button class="btn btn-r" onclick="crearUsuario()" id="btn-crear-usr">Crear Usuario</button>
+          <div class="g3">
+            <div class="field"><label>Nombre completo <span class="req">*</span></label><input type="text" id="su-nombre" placeholder="ING. NOMBRE APELLIDO"></div>
+            <div class="field"><label>Correo electrónico <span class="req">*</span></label><input type="email" id="su-email" placeholder="correo@dominio.com"></div>
+            <div class="field"><label>Rol solicitado</label>
+              <select id="su-rol"><option value="Usuario">Usuario</option><option value="Admin">Administrador</option></select>
+            </div>
+            <div class="field c3" style="flex-direction:row;align-items:flex-end;justify-content:flex-end;">
+              <button class="btn btn-g" onclick="solicitarUsuario()" id="btn-sol-usr">Enviar Solicitud</button>
             </div>
           </div>
-          <div class="usr-row usr-hdr"><div>Nombre</div><div>Rol</div><div>Status</div><div>Acción</div></div>
-          <div id="lista-usuarios"></div>
+          <p style="font-size:11px;color:var(--sec);margin-top:10px;">El administrador recibirá la solicitud y creará el acceso. Se te notificará cuando esté listo.</p>
         </div>
       </div>
+
+      <!-- Solo Admin: crear usuario directo y aprobar solicitudes -->
+      <div id="sec-admin-usuarios" style="display:none;">
+        <div class="section">
+          <div class="sh sh-g">Crear usuario directo</div>
+          <div class="sb">
+            <div class="g3">
+              <div class="field"><label>Nombre completo <span class="req">*</span></label><input type="text" id="nu-nombre" placeholder="ING. NOMBRE APELLIDO"></div>
+              <div class="field"><label>Correo electrónico <span class="req">*</span></label><input type="email" id="nu-email" placeholder="correo@dominio.com"></div>
+              <div class="field"><label>Contraseña temporal <span class="req">*</span></label><input type="password" id="nu-pass" placeholder="Mínimo 6 caracteres"></div>
+              <div class="field"><label>Rol</label>
+                <select id="nu-rol"><option value="Usuario">Usuario</option><option value="Admin">Administrador</option></select>
+              </div>
+              <div class="field c2" style="flex-direction:row;align-items:flex-end;justify-content:flex-end;">
+                <button class="btn btn-r" onclick="crearUsuario()" id="btn-crear-usr">Crear Usuario</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section" id="sec-sol-usr">
+          <div class="sh sh-g">Solicitudes pendientes de aprobación</div>
+          <div class="sb">
+            <div class="usr-row usr-hdr"><div>Nombre / Correo</div><div>Rol</div><div>Solicitado por</div><div>Acción</div></div>
+            <div id="lista-sol-usr"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="sh sh-g">Usuarios del sistema</div>
+          <div class="sb">
+            <div class="usr-row usr-hdr"><div>Nombre</div><div>Rol</div><div>Status</div><div>Acción</div></div>
+            <div id="lista-usuarios"></div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -585,6 +624,7 @@ function mostrarApp() {
   document.getElementById('firma-prov-nombre').textContent='Proveedor';
   if(isAdmin){
     document.getElementById('role-badge').style.display='inline-block';
+    document.getElementById('sec-admin-usuarios').style.display='block';
     const tabs=document.getElementById('tabs-container');
     const sep=document.createElement('div');sep.className='tab-sep';tabs.appendChild(sep);
     const t1=document.createElement('div');t1.className='tab atab';t1.id='tab-aprobaciones';
@@ -717,7 +757,11 @@ function initForm() {
   document.getElementById('f-emi').value=hoy;
   renderConceptos();
 }
-function genFolio(){return new Date().getFullYear()+String(Date.now()).slice(-5);}
+function genFolio(){
+  const y=new Date().getFullYear();
+  const rand=Math.floor(Math.random()*90000)+10000;
+  return y+''+rand;
+}
 function calcTiempo(){
   const i=document.getElementById('f-ini').value,t=document.getElementById('f-ter').value;
   if(i&&t){const d=Math.round((new Date(t)-new Date(i))/86400000);if(d>=0)document.getElementById('tiempo').value=d;}
@@ -952,9 +996,13 @@ function renderLista(ordenes,cid,adm){
     const badge=ap?'<span class="sb-a">Aprobado</span>':re?'<span class="sb-r">Rechazado</span>':'<span class="sb-p">Pendiente</span>';
     const fecha=o.fecha_solicitud?new Date(o.fecha_solicitud+'T12:00:00').toLocaleDateString('es-MX'):'—';
     const col4=adm?`<div style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.nombre_solicitante||'—'}</div>`:`<div style="font-size:12px">${o.unidad||'—'}</div>`;
+    const puedeEliminar = !ap && !re;
     const accion=adm&&!ap&&!re
       ?`<button class="btn btn-g" style="font-size:10px;padding:5px 9px;" onclick="abrirOrden('${o.id}',true)">Revisar</button>`
-      :`<button class="btn btn-n" style="font-size:10px;padding:5px 9px;" onclick="abrirOrden('${o.id}',false)">Ver</button>`;
+      :`<div style="display:flex;gap:4px;">
+        <button class="btn btn-n" style="font-size:10px;padding:5px 9px;" onclick="abrirOrden('${o.id}',false)">Ver</button>
+        ${puedeEliminar?`<button class="btn btn-r" style="font-size:10px;padding:5px 9px;" onclick="confirmarEliminar('${o.id}','${o.folio}')">Eliminar</button>`:''}
+       </div>`;
     return `<div class="lr"><div class="ft">${o.folio||'—'}</div><div style="font-size:11px;color:var(--sec)">${fecha}</div><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.nombre_proveedor||'—'}</div>${col4}<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--verde)">${fmt(o.total)}</div><div>${badge}</div><div>${accion}</div></div>`;
   }).join('');
 }
@@ -1018,6 +1066,16 @@ async function eliminarOrden(id){
   await sb.from('conceptos').delete().eq('orden_id',id);
   await sb.from('ordenes').delete().eq('id',id);
   toast('Orden eliminada');cerrarModal();cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();
+}
+
+async function confirmarEliminar(id, folio){
+  if(!confirm('¿Eliminar la orden '+folio+'? Esta acción no se puede deshacer.'))return;
+  await sb.from('conceptos').delete().eq('orden_id',id);
+  const {error}=await sb.from('ordenes').delete().eq('id',id);
+  if(error){toast('Error al eliminar: '+error.message,true);return;}
+  toast('Orden '+folio+' eliminada');
+  cargarMisOrdenes();
+  if(isAdmin)cargarTodasOrdenes();
 }
 function cerrarModal(){document.getElementById('modal-orden').classList.remove('open');}
 
@@ -1104,6 +1162,55 @@ async function rechazarProv(id){
 }
 
 // ══ USUARIOS ══
+async function solicitarUsuario(){
+  const nombre=document.getElementById('su-nombre').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const rol=document.getElementById('su-rol').value;
+  if(!nombre||!email){toast('Nombre y correo son obligatorios',true);return;}
+  const btn=document.getElementById('btn-sol-usr');
+  btn.innerHTML='<span class="spinner"></span>Enviando...';btn.disabled=true;
+  const {error}=await sb.from('solicitudes_usuarios').insert([{
+    nombre_completo:nombre,email,rol,
+    solicitado_por:currentUser.id,nombre_solicitante:userNombre,
+    status:'pendiente'
+  }]);
+  if(error){toast('Error: '+error.message,true);btn.innerHTML='Enviar Solicitud';btn.disabled=false;return;}
+  toast('✓ Solicitud enviada — el administrador la revisará');
+  btn.innerHTML='Enviar Solicitud';btn.disabled=false;
+  document.getElementById('su-nombre').value='';
+  document.getElementById('su-email').value='';
+}
+
+async function cargarSolicitudesUsr(){
+  const {data}=await sb.from('solicitudes_usuarios').select('*').eq('status','pendiente').order('created_at',{ascending:false});
+  const cont=document.getElementById('lista-sol-usr');
+  if(!data||!data.length){cont.innerHTML='<div class="empty">No hay solicitudes pendientes</div>';return;}
+  cont.innerHTML=data.map(s=>`<div class="usr-row" style="background:#fff8e6;border-color:#f5d87a;">
+    <div><div style="font-weight:500">${s.nombre_completo}</div><div style="font-size:11px;color:var(--sec)">${s.email}</div></div>
+    <div><span style="font-size:11px;background:var(--verde-l);color:var(--verde);padding:2px 8px;border-radius:10px;font-weight:600">${s.rol}</span></div>
+    <div style="font-size:11px">${s.nombre_solicitante||'—'}</div>
+    <div style="display:flex;gap:6px;">
+      <button class="btn btn-g" style="font-size:10px;padding:4px 9px;" onclick="aprobarSolUsr('${s.id}','${s.nombre_completo}','${s.email}','${s.rol}')">✓ Crear</button>
+      <button class="btn btn-r" style="font-size:10px;padding:4px 9px;" onclick="rechazarSolUsr('${s.id}')">✗</button>
+    </div>
+  </div>`).join('');
+}
+
+async function aprobarSolUsr(id, nombre, email, rol){
+  const pass = 'Imss'+new Date().getFullYear()+'!';
+  const {data,error}=await sb.auth.admin.createUser({email,password:pass,email_confirm:true});
+  if(error){toast('Error: '+error.message,true);return;}
+  await sb.from('perfiles').insert([{id:data.user.id,nombre_completo:nombre,tipo:rol,activo:true}]);
+  await sb.from('solicitudes_usuarios').update({status:'aprobado'}).eq('id',id);
+  toast('✓ Usuario creado · Contraseña temporal: '+pass);
+  cargarSolicitudesUsr();cargarUsuarios();
+}
+
+async function rechazarSolUsr(id){
+  await sb.from('solicitudes_usuarios').update({status:'rechazado'}).eq('id',id);
+  toast('Solicitud rechazada');cargarSolicitudesUsr();
+}
+
 async function crearUsuario(){
   const nombre=document.getElementById('nu-nombre').value.trim();
   const email=document.getElementById('nu-email').value.trim();
@@ -1158,7 +1265,7 @@ function showTab(tab){
     if(c)c.style.display=t===tab?'block':'none';
     if(tb)tb.classList.toggle('active',t===tab);
   });
-  if(tab==='usuarios')cargarUsuarios();
+  if(tab==='usuarios'){cargarUsuarios();if(isAdmin)cargarSolicitudesUsr();}
   if(tab==='proveedores'){cargarProveedoresLista();if(isAdmin)cargarSolicitudesProv();}
 }
 
