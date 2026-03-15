@@ -261,7 +261,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
           <div class="g4">
             <div class="field"><label>Delegación</label><input type="text" value="Baja California" class="ro" readonly></div>
             <div class="field"><label>Unidad <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-unidad" placeholder="Buscar unidad..." oninput="acSearch('unidad',this.value)" autocomplete="off"><div class="ac-list" id="acl-unidad"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-unidad" onclick="acOpen('unidad')" onfocus="acOpen('unidad')" placeholder="Buscar unidad..." oninput="acSearch('unidad',this.value)" autocomplete="off"><div class="ac-list" id="acl-unidad"></div></div>
             </div>
             <div class="field"><label>Clave Unidad</label><input type="text" id="clave-unidad" class="ro" readonly placeholder="Auto"></div>
             <div class="field"><label>JCU</label><input type="text" id="jcu" class="ro" readonly placeholder="Auto"></div>
@@ -276,7 +276,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
               </select>
             </div>
             <div class="field c2"><label>Elaboró <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-elaboro" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off"><div class="ac-list" id="acl-elaboro"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" onfocus="acOpen('elaboro')" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off"><div class="ac-list" id="acl-elaboro"></div></div>
             </div>
             <div class="field"><label>Folio Depto.</label><input type="text" id="f-depto" placeholder="DEP-001"></div>
             <div class="field"><label>Folio SEGADE</label><input type="text" id="f-segade" placeholder="SEG-001"></div>
@@ -290,7 +290,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
         <div class="sb">
           <div class="g3">
             <div class="field c2"><label>Partida Presupuestal <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-partida" placeholder="Buscar partida..." oninput="acSearch('partida',this.value)" autocomplete="off"><div class="ac-list" id="acl-partida"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-partida" onclick="acOpen('partida')" onfocus="acOpen('partida')" placeholder="Buscar partida..." oninput="acSearch('partida',this.value)" autocomplete="off"><div class="ac-list" id="acl-partida"></div></div>
             </div>
             <div class="field"><label>Tipo</label><input type="text" id="tipo-partida" class="ro" readonly placeholder="Auto"></div>
             <div class="field"><label>Especialidad</label><input type="text" id="especialidad" placeholder="Ej. Electricidad"></div>
@@ -309,7 +309,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
         <div class="sb">
           <div class="g3">
             <div class="field c2"><label>Razón Social <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-prov" placeholder="Buscar proveedor..." oninput="acSearch('prov',this.value)" autocomplete="off"><div class="ac-list" id="acl-prov"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-prov" onclick="acOpen('prov')" onfocus="acOpen('prov')" placeholder="Buscar proveedor..." oninput="acSearch('prov',this.value)" autocomplete="off"><div class="ac-list" id="acl-prov"></div></div>
             </div>
             <div class="field"><label>No. Proveedor</label><input type="text" id="num-prov" class="ro" readonly placeholder="Auto"></div>
             <div class="field"><label>RFC</label><input type="text" id="rfc-prov" class="ro" readonly placeholder="Auto"></div>
@@ -598,25 +598,31 @@ function mostrarApp() {
 }
 
 // ══ AUTOCOMPLETE ENGINE ══
+function acOpen(tipo) {
+  acSearch(tipo, document.getElementById('ac-'+tipo).value || ' ');
+  document.getElementById('ac-'+tipo).select();
+}
 function acSearch(tipo, val) {
   const listEl = document.getElementById('acl-'+tipo);
-  if(!val||val.length<1){listEl.classList.remove('open');return;}
-  const q=val.toLowerCase();
+  const q = (val||'').trim();
+  if(!q && val !== ' '){listEl.classList.remove('open');return;}
+  const q=val===(' ')?' ':val.toLowerCase();
+  const matchAll = q===' ';
   let items=[];
   if(tipo==='unidad'){
-    items=UNIDADES.filter(u=>u.unidad.toLowerCase().includes(q)||String(u.jcu).includes(q)).slice(0,12).map(u=>({
+    items=UNIDADES.filter(u=>matchAll||u.unidad.toLowerCase().includes(q)||String(u.jcu).includes(q)).slice(0,20).map(u=>({
       main:u.unidad, sub:'JCU: '+u.jcu+' · '+u.ui+'-'+u.cc, val:u.unidad, data:u
     }));
   } else if(tipo==='elaboro'){
-    items=USUARIOS_CAT.filter(u=>u.nombre.toLowerCase().includes(q)).slice(0,10).map(u=>({
+    items=USUARIOS_CAT.filter(u=>matchAll||u.nombre.toLowerCase().includes(q)).slice(0,25).map(u=>({
       main:u.nombre, sub:u.tipo, val:u.nombre, data:u
     }));
   } else if(tipo==='partida'){
-    items=PARTIDAS.filter(p=>p.clave.toLowerCase().includes(q)||p.descripcion.toLowerCase().includes(q)).slice(0,12).map(p=>({
+    items=PARTIDAS.filter(p=>matchAll||p.clave.toLowerCase().includes(q)||p.descripcion.toLowerCase().includes(q)).slice(0,21).map(p=>({
       main:p.clave, sub:p.descripcion+' · '+p.tipo, val:p.clave, data:p
     }));
   } else if(tipo==='prov'){
-    items=PROVEEDORES_CAT.filter(p=>p.razon_social.toLowerCase().includes(q)||p.rfc.toLowerCase().includes(q)).slice(0,12).map(p=>({
+    items=PROVEEDORES_CAT.filter(p=>matchAll||p.razon_social.toLowerCase().includes(q)||p.rfc.toLowerCase().includes(q)).slice(0,20).map(p=>({
       main:p.razon_social, sub:'RFC: '+p.rfc+(p.ret_isr?' · ISR: Sí':''), val:p.razon_social, data:p
     }));
   } else if(tipo==='concepto'){
@@ -705,7 +711,7 @@ function renderConceptos() {
       <td>
         <div class="ac-wrap">
           <input class="ac-input" id="ac-concepto-${i}" value="${c.desc}" placeholder="${pool.length?'Buscar concepto...':'Descripción libre...'}"
-            oninput="acSearchConcepto(${i},this.value)"
+            onclick="acSearchConcepto(${i},this.value||'')" onfocus="acSearchConcepto(${i},this.value||'')" oninput="acSearchConcepto(${i},this.value)"
             onchange="conceptos[${i}].desc=this.value"
             autocomplete="off" style="min-width:240px">
           <div class="ac-list" id="acl-concepto-${i}" data-idx="${i}"></div>
@@ -726,13 +732,13 @@ function renderConceptos() {
 
 function acSearchConcepto(idx, val) {
   const listEl=document.getElementById('acl-concepto-'+idx);
-  conceptos[idx].desc=val;
-  if(!val||val.length<2){listEl.classList.remove('open');return;}
-  const q=val.toLowerCase();
+  if(val!==''&&val!==undefined) conceptos[idx].desc=val;
+  const q=(val||'').toLowerCase();
+  const matchAll = !val||val.length===0;
   const pClave=selPartida?.clave||'';
   const pool=CONCEPTOS_MAP[pClave]||[];
   if(!pool.length){listEl.classList.remove('open');return;}
-  const items=pool.filter(c=>c.texto.toLowerCase().includes(q)).slice(0,12);
+  const items=pool.filter(c=>matchAll||c.texto.toLowerCase().includes(q)).slice(0,20);
   if(!items.length){listEl.classList.remove('open');return;}
   listEl.innerHTML=items.map((c,i)=>`<div class="ac-item" onclick="selectConcepto(${idx},${i})">
     <div class="ac-main">${highlight(c.texto.substring(0,70),q)}</div>
