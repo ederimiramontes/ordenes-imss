@@ -72,7 +72,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .sh-v{background:var(--verde);}
 .sh-g{background:var(--guinda);}
 .sh-a{background:var(--azul);}
-.sb{padding:16px 18px;}
+.sb{padding:16px 18px;overflow-x:auto;}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
 .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
 .g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;}
@@ -99,11 +99,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .ac-item mark{background:var(--verde-l);color:var(--verde);border-radius:2px;font-style:normal;}
 
 /* TABLA CONCEPTOS */
-.tbl{width:100%;border-collapse:collapse;font-size:12px;}
+.tbl{width:100%;min-width:680px;border-collapse:collapse;font-size:12px;}
 .tbl th{background:var(--verde-l);color:var(--verde);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;padding:8px;text-align:left;border-bottom:2px solid var(--verde-m);}
 .tbl td{padding:5px 4px;border-bottom:1px solid var(--borde);vertical-align:middle;}
 .tbl .nc{width:28px;text-align:center;font-size:11px;font-weight:600;color:var(--sec);}
-.tbl .ic{font-family:'IBM Plex Mono',monospace;color:var(--verde);font-weight:500;text-align:right;padding-right:8px;white-space:nowrap;}
+.tbl .ic{font-family:'IBM Plex Mono',monospace;color:var(--verde);font-weight:500;text-align:right;padding-right:8px;white-space:nowrap;min-width:100px;}
 .tbl .r5-dot{width:14px;height:14px;border-radius:50%;background:var(--gris);border:1.5px solid var(--borde);display:inline-block;}
 .tbl .r5-dot.on{background:var(--guinda);border-color:var(--guinda);}
 
@@ -276,7 +276,11 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
               </select>
             </div>
             <div class="field c2"><label>Elaboró <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off"><div class="ac-list" id="acl-elaboro"></div></div>
+              <div class="ac-wrap" style="display:flex;align-items:center;gap:0;">
+  <input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off" style="flex:1;border-radius:var(--radio) 0 0 var(--radio);">
+  <button type="button" onclick="acOpen('elaboro')" style="padding:8px 10px;border:1.5px solid var(--borde);border-left:none;border-radius:0 var(--radio) var(--radio) 0;background:var(--gris);cursor:pointer;color:var(--sec);font-size:12px;">▼</button>
+  <div class="ac-list" id="acl-elaboro"></div>
+</div>
             </div>
             <div class="field"><label>Folio Depto.</label><input type="text" id="f-depto" placeholder="DEP-001"></div>
             <div class="field"><label>Folio SEGADE</label><input type="text" id="f-segade" placeholder="SEG-001"></div>
@@ -611,11 +615,13 @@ function acOpen(tipo) {
   if(!items.length){acSearch(tipo,val);return;}
   // Filtrar si hay texto
   if(val.length>0){
-    const q=val.toLowerCase();
-    items=items.filter(it=>it.main.toLowerCase().includes(q)||it.sub.toLowerCase().includes(q));
+    const qFilter=val.toLowerCase();
+    items=items.filter(it=>it.main.toLowerCase().includes(qFilter)||(it.sub||'').toLowerCase().includes(qFilter));
   }
   if(!items.length){listEl.classList.remove('open');return;}
-  listEl.innerHTML=items.map((it,i)=>'<div class="ac-item" onclick="acSelect(''+tipo+'','+i+')" data-idx="'+i+'"><div class="ac-main">'+it.main+'</div>'+(it.sub?'<div class="ac-sub">'+it.sub+'</div>':'')+'</div>').join('');
+  listEl.innerHTML=items.map(function(it,i){
+    return '<div class="ac-item" onclick="acSelect(\'' + tipo + '\',' + i + ')" data-idx="' + i + '"><div class="ac-main">' + it.main + '</div>' + (it.sub ? '<div class="ac-sub">' + it.sub + '</div>' : '') + '</div>';
+  }).join('');
   listEl._items=items;
   // Posicionar dropdown con position:fixed
   const rect = inp.getBoundingClientRect();
