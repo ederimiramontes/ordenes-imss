@@ -89,7 +89,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .ac-wrap{position:relative;}
 .ac-input{width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;transition:border-color 0.2s,background 0.2s;}
 .ac-input:focus{border-color:var(--verde);background:white;}
-.ac-list{position:fixed;min-width:320px;width:max-content;max-width:500px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:9999;max-height:240px;overflow-y:auto;display:none;}
+.ac-list{position:fixed;min-width:360px;width:max-content;max-width:520px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:9999;max-height:280px;overflow-y:auto;display:none;}
 .ac-list.open{display:block;}
 .ac-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--gris);transition:background 0.15s;}
 .ac-item:hover{background:var(--verde-l);}
@@ -623,11 +623,12 @@ function acOpen(tipo) {
     return '<div class="ac-item" onclick="acSelect(\'' + tipo + '\',' + i + ')" data-idx="' + i + '"><div class="ac-main">' + it.main + '</div>' + (it.sub ? '<div class="ac-sub">' + it.sub + '</div>' : '') + '</div>';
   }).join('');
   listEl._items=items;
-  // Posicionar dropdown con position:fixed
+  // Posicionar dropdown con position:fixed (sin scrollY - fixed es relativo al viewport)
   const rect = inp.getBoundingClientRect();
-  listEl.style.top = (rect.bottom + window.scrollY) + 'px';
+  listEl.style.top = rect.bottom + 'px';
   listEl.style.left = rect.left + 'px';
-  listEl.style.width = Math.max(320, rect.width) + 'px';
+  listEl.style.width = Math.max(360, rect.width) + 'px';
+  listEl.style.maxHeight = '260px';
   listEl.classList.add('open');
   setTimeout(()=>inp.select(),50);
 }
@@ -668,13 +669,14 @@ function acSearch(tipo, val) {
     ${it.sub?`<div class="ac-sub">${it.sub}</div>`:''}
   </div>`).join('');
   listEl._items=items;
-  // Posicionar con fixed
+  // Posicionar con fixed (relativo al viewport)
   const inp2 = document.getElementById('ac-'+tipo);
   if(inp2){
     const r = inp2.getBoundingClientRect();
-    listEl.style.top = (r.bottom + window.scrollY) + 'px';
+    listEl.style.top = r.bottom + 'px';
     listEl.style.left = r.left + 'px';
-    listEl.style.width = Math.max(320, r.width) + 'px';
+    listEl.style.width = Math.max(360, r.width) + 'px';
+    listEl.style.maxHeight = '260px';
   }
   listEl.classList.add('open');
 }
@@ -892,7 +894,7 @@ function nuevaOrden(){
   ['ac-unidad','ac-partida','ac-prov','especialidad','subespecialidad','destino',
    'f-ini','f-ter','f-depto','f-segade','jefe-depto','matricula',
    'clave-unidad','jcu','num-prov','rfc-prov','dom-prov','tipo-partida','tiempo'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('ac-elaboro').value=userNombre;selElaboro=userNombre;
+  document.getElementById('ac-elaboro').value='';selElaboro='';
   document.getElementById('sel-iva').value='';
   document.getElementById('origen').value='';
   document.getElementById('firma-prov-nombre').textContent='Proveedor';
