@@ -89,7 +89,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .ac-wrap{position:relative;}
 .ac-input{width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;transition:border-color 0.2s,background 0.2s;}
 .ac-input:focus{border-color:var(--verde);background:white;}
-.ac-list{position:absolute;top:100%;left:0;right:0;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:50;max-height:220px;overflow-y:auto;display:none;}
+.ac-list{position:absolute;top:100%;left:0;min-width:320px;width:max-content;max-width:500px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:500;max-height:240px;overflow-y:auto;display:none;}
 .ac-list.open{display:block;}
 .ac-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--gris);transition:background 0.15s;}
 .ac-item:hover{background:var(--verde-l);}
@@ -261,7 +261,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
           <div class="g4">
             <div class="field"><label>Delegación</label><input type="text" value="Baja California" class="ro" readonly></div>
             <div class="field"><label>Unidad <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-unidad" onclick="acOpen('unidad')" onfocus="acOpen('unidad')" placeholder="Buscar unidad..." oninput="acSearch('unidad',this.value)" autocomplete="off"><div class="ac-list" id="acl-unidad"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-unidad" onclick="acOpen('unidad')" placeholder="Buscar unidad..." oninput="acSearch('unidad',this.value)" autocomplete="off"><div class="ac-list" id="acl-unidad"></div></div>
             </div>
             <div class="field"><label>Clave Unidad</label><input type="text" id="clave-unidad" class="ro" readonly placeholder="Auto"></div>
             <div class="field"><label>JCU</label><input type="text" id="jcu" class="ro" readonly placeholder="Auto"></div>
@@ -276,7 +276,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
               </select>
             </div>
             <div class="field c2"><label>Elaboró <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" onfocus="acOpen('elaboro')" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off"><div class="ac-list" id="acl-elaboro"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-elaboro" onclick="acOpen('elaboro')" placeholder="Buscar nombre..." oninput="acSearch('elaboro',this.value)" autocomplete="off"><div class="ac-list" id="acl-elaboro"></div></div>
             </div>
             <div class="field"><label>Folio Depto.</label><input type="text" id="f-depto" placeholder="DEP-001"></div>
             <div class="field"><label>Folio SEGADE</label><input type="text" id="f-segade" placeholder="SEG-001"></div>
@@ -290,7 +290,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
         <div class="sb">
           <div class="g3">
             <div class="field c2"><label>Partida Presupuestal <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-partida" onclick="acOpen('partida')" onfocus="acOpen('partida')" placeholder="Buscar partida..." oninput="acSearch('partida',this.value)" autocomplete="off"><div class="ac-list" id="acl-partida"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-partida" onclick="acOpen('partida')" placeholder="Buscar partida..." oninput="acSearch('partida',this.value)" autocomplete="off"><div class="ac-list" id="acl-partida"></div></div>
             </div>
             <div class="field"><label>Tipo</label><input type="text" id="tipo-partida" class="ro" readonly placeholder="Auto"></div>
             <div class="field"><label>Especialidad</label><input type="text" id="especialidad" placeholder="Ej. Electricidad"></div>
@@ -309,7 +309,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
         <div class="sb">
           <div class="g3">
             <div class="field c2"><label>Razón Social <span class="req">*</span></label>
-              <div class="ac-wrap"><input class="ac-input" id="ac-prov" onclick="acOpen('prov')" onfocus="acOpen('prov')" placeholder="Buscar proveedor..." oninput="acSearch('prov',this.value)" autocomplete="off"><div class="ac-list" id="acl-prov"></div></div>
+              <div class="ac-wrap"><input class="ac-input" id="ac-prov" onclick="acOpen('prov')" placeholder="Buscar proveedor..." oninput="acSearch('prov',this.value)" autocomplete="off"><div class="ac-list" id="acl-prov"></div></div>
             </div>
             <div class="field"><label>No. Proveedor</label><input type="text" id="num-prov" class="ro" readonly placeholder="Auto"></div>
             <div class="field"><label>RFC</label><input type="text" id="rfc-prov" class="ro" readonly placeholder="Auto"></div>
