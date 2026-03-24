@@ -276,12 +276,19 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
                 <div style="font-size:12px;color:var(--sec);margin-top:3px;">Busca una orden existente por número de folio</div>
               </div>
             </div>
-            <div class="ac-wrap">
-              <input class="ac-input" id="ac-buscar-folio" placeholder="Escribe el número de folio o haz clic para ver todos..."
-                onclick="acBuscarFolio(this.value)"
-                oninput="acBuscarFolio(this.value)"
-                autocomplete="off" style="width:100%;font-size:13px;">
-              <div class="ac-list" id="acl-buscar-folio"></div>
+            <div style="display:flex;gap:8px;align-items:flex-start;">
+              <div class="ac-wrap" style="flex:1;">
+                <input class="ac-input" id="ac-buscar-folio"
+                  placeholder="Escribe el número de folio o haz clic para ver todos..."
+                  onclick="acBuscarFolio(this.value)"
+                  oninput="acBuscarFolio(this.value)"
+                  onkeydown="if(event.key==='Enter'){const l=document.getElementById('acl-buscar-folio');if(l._items&&l._items.length===1)seleccionarFolioExistente(l._items[0].id);}"
+                  autocomplete="off" style="width:100%;font-size:13px;">
+                <div class="ac-list" id="acl-buscar-folio"></div>
+              </div>
+              <button class="btn btn-a" onclick="acBuscarFolio(document.getElementById('ac-buscar-folio').value)" style="padding:9px 18px;font-size:12px;white-space:nowrap;">
+                Buscar
+              </button>
             </div>
           </div>
         </div>
