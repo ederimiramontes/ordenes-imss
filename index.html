@@ -1026,7 +1026,12 @@ async function guardarOrden(){
     created_by:currentUser.id
   };
   const {data:od,error:oe}=await sb.from('ordenes').insert([orden]).select().single();
-  if(oe){toast('Error: '+oe.message,true);btn.innerHTML='Guardar Orden';btn.disabled=false;return;}
+  if(oe){
+    console.error('Error guardando orden:', oe);
+    toast('Error al guardar: '+oe.message,true);
+    btn.innerHTML='Guardar Orden';btn.disabled=false;return;
+  }
+  if(!od){toast('Error: no se recibió confirmación de Supabase',true);btn.innerHTML='Guardar Orden';btn.disabled=false;return;}
   const cds=conceptos.filter(c=>c.desc.trim()).map(c=>({orden_id:od.id,consecutivo:c.num,descripcion:c.desc,cantidad_solicitada:c.cantSol,cantidad_entregada:c.cantEnt,precio_unitario:c.pu,importe:c.imp}));
   if(cds.length)await sb.from('conceptos').insert(cds);
   toast('✓ Orden '+folioActual+' guardada');
@@ -1042,7 +1047,12 @@ async function nuevaOrden(){
 
 // ══ MIS ÓRDENES ══
 async function cargarMisOrdenes(){
-  const {data}=await sb.from('ordenes').select('id,folio,fecha_solicitud,unidad,nombre_proveedor,total,status').eq('created_by',currentUser.id).order('created_at',{ascending:false}).limit(200);
+  const {data,error}=await sb.from('ordenes').select('id,folio,fecha_solicitud,unidad,nombre_proveedor,total,status').eq('created_by',currentUser.id).order('created_at',{ascending:false}).limit(200);
+  if(error){
+    console.error('Error cargando órdenes:', error);
+    document.getElementById('lista-mis').innerHTML='<div class="empty" style="color:var(--guinda)">Error al cargar: '+error.message+'</div>';
+    return;
+  }
   misOrdenes=data||[];
   document.getElementById('badge-mis').textContent=misOrdenes.length;
   renderLista(misOrdenes,'lista-mis',false);
