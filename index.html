@@ -596,7 +596,7 @@ async function doLogin() {
   if(error){err.textContent='Correo o contraseña incorrectos';err.style.display='block';btn.innerHTML='Iniciar Sesión';btn.disabled=false;return;}
   currentUser=data.user;
   await cargarPerfil();
-  mostrarApp();
+  await mostrarApp();
 }
 async function cargarPerfil() {
   const {data}=await sb.from('perfiles').select('*').eq('id',currentUser.id).single();
@@ -615,7 +615,7 @@ async function checkSession() {
   const {data}=await sb.auth.getSession();
   if(data.session){currentUser=data.session.user;await cargarPerfil();mostrarApp();}
 }
-function mostrarApp() {
+async function mostrarApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   document.getElementById('topbar-user').textContent=userNombre;
@@ -634,7 +634,7 @@ function mostrarApp() {
     t2.textContent='Usuarios';t2.onclick=()=>showTab('usuarios');tabs.appendChild(t2);
     document.getElementById('sec-sol-prov').style.display='block';
   }
-  initForm();
+  await initForm();
   cargarMisOrdenes();
   cargarProveedoresLista();
   if(isAdmin){cargarTodasOrdenes();cargarSolicitudesProv();}
