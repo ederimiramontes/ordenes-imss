@@ -688,6 +688,7 @@ async function mostrarApp() {
     document.getElementById('sec-sol-prov').style.display='block';
   }
   await initForm();
+  showTab('nueva');
   cargarMisOrdenes();
   cargarProveedoresLista();
   if(isAdmin){cargarTodasOrdenes();cargarSolicitudesProv();}
@@ -801,13 +802,56 @@ document.addEventListener('click', e=>{
   }
 });
 
-// ══ FORM INIT ══
-async function initForm() {
+// ══ MENÚ GESTIONAR ORDEN ══
+async function iniciarNuevoFolio(){
+  document.getElementById('menu-gestion').style.display='none';
+  document.getElementById('form-orden').style.display='block';
+  document.getElementById('folio-display').textContent='Cargando...';
   folioActual=await genFolio();
   document.getElementById('folio-display').textContent=folioActual;
+  selUnidad=null;selPartida=null;selProv=null;
+  ['ac-unidad','ac-partida','ac-prov','especialidad','subespecialidad','destino',
+   'f-ini','f-ter','f-depto','f-segade','jefe-depto','matricula',
+   'clave-unidad','jcu','num-prov','rfc-prov','dom-prov','tipo-partida','tiempo'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('ac-elaboro').value='';selElaboro='';
+  document.getElementById('sel-iva').value='';
+  document.getElementById('origen').value='';
+  document.getElementById('firma-prov-nombre').textContent='Proveedor';
+  document.getElementById('aviso-partida').style.display='none';
+  conceptos=mkC();renderConceptos();
   const hoy=new Date().toISOString().split('T')[0];
   document.getElementById('f-sol').value=hoy;
   document.getElementById('f-emi').value=hoy;
+}
+
+function volverMenu(){
+  document.getElementById('form-orden').style.display='none';
+  document.getElementById('menu-gestion').style.display='block';
+  document.getElementById('ac-buscar-folio').value='';
+  const listEl=document.getElementById('acl-buscar-folio');
+  if(listEl) listEl.classList.remove('open');
+}
+
+async function acBuscarFolio(val){
+  const listEl=document.getElementById('acl-buscar-folio');
+  const q=(val||'').trim();
+  let query=sb.from('ordenes')
+    .select('id,folio,fecha_solicitud,nombre_proveedor,unidad,status')
+    .order('folio',{ascending:false})
+    .limit(40);
+  if(q) query=query.ilike('folio','%'+q+'%');
+  listEl.classList.add('open');
+}
+
+async function seleccionarFolioExistente(id){
+  document.getElementById('acl-buscar-folio').classList.remove('open');
+  await abrirOrden(id,isAdmin);
+}
+
+// ══ FORM INIT ══
+async function initForm() {
   renderConceptos();
 }
 async function genFolio(){
