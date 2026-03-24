@@ -758,19 +758,25 @@ async function initForm() {
   renderConceptos();
 }
 async function genFolio(){
-  const y=new Date().getFullYear();
-  // Obtener el último folio del año actual para hacer consecutivo
-  const {data}=await sb.from('ordenes')
-    .select('folio')
-    .like('folio', y+'%')
-    .order('folio', {ascending:false})
-    .limit(1);
-  let siguiente = 1;
-  if(data && data.length > 0){
-    const ultimo = parseInt(data[0].folio.toString().slice(4)) || 0;
-    siguiente = ultimo + 1;
+  try {
+    const y=new Date().getFullYear();
+    const {data,error}=await sb.from('ordenes')
+      .select('folio')
+      .like('folio', y+'%')
+      .order('folio', {ascending:false})
+      .limit(1);
+    if(error) throw error;
+    let siguiente = 1;
+    if(data && data.length > 0){
+      const ultimo = parseInt(data[0].folio.toString().slice(4)) || 0;
+      siguiente = ultimo + 1;
+    }
+    return y + String(siguiente).padStart(4,'0');
+  } catch(e) {
+    // Fallback: usar timestamp si falla Supabase
+    const y=new Date().getFullYear();
+    return y + String(Math.floor(Math.random()*9000)+1000);
   }
-  return y + String(siguiente).padStart(4,'0');
 }
 function calcTiempo(){
   const i=document.getElementById('f-ini').value,t=document.getElementById('f-ter').value;
@@ -926,6 +932,7 @@ async function guardarOrden(){
 }
 
 async function nuevaOrden(){
+  document.getElementById('folio-display').textContent='Cargando...';
   folioActual=await genFolio();
   document.getElementById('folio-display').textContent=folioActual;
   selUnidad=null;selPartida=null;selProv=null;
