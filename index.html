@@ -659,9 +659,19 @@ async function doLogin() {
   await mostrarApp();
 }
 async function cargarPerfil() {
-  const {data}=await sb.from('perfiles').select('*').eq('id',currentUser.id).single();
-  if(data){isAdmin=data.tipo==='Admin';userNombre=data.nombre_completo||currentUser.email;}
-  else{userNombre=currentUser.email;isAdmin=false;}
+  try {
+    const {data,error}=await sb.from('perfiles').select('*').eq('id',currentUser.id).limit(1);
+    if(data&&data.length>0){
+      isAdmin=data[0].tipo==='Admin';
+      userNombre=data[0].nombre_completo||currentUser.email;
+    } else {
+      userNombre=currentUser.email;
+      isAdmin=false;
+    }
+  } catch(e){
+    userNombre=currentUser.email;
+    isAdmin=false;
+  }
 }
 async function doLogout() {
   await sb.auth.signOut();
@@ -823,8 +833,8 @@ async function iniciarNuevoFolio(){
   document.getElementById('ac-elaboro').value='';selElaboro='';
   document.getElementById('sel-iva').value='';
   document.getElementById('origen').value='';
-  document.getElementById('firma-prov-nombre').textContent='Proveedor';
-  document.getElementById('aviso-partida').style.display='none';
+  const fpn=document.getElementById('firma-prov-nombre');if(fpn)fpn.textContent='Proveedor';
+  const avp=document.getElementById('aviso-partida');if(avp)avp.style.display='none';
   conceptos=mkC();renderConceptos();
   const hoy=new Date().toISOString().split('T')[0];
   document.getElementById('f-sol').value=hoy;
