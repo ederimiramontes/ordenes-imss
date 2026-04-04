@@ -89,7 +89,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .ac-wrap{position:relative;overflow:visible;}
 .ac-input{width:100%;font-family:'IBM Plex Sans',sans-serif;font-size:13px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;transition:border-color 0.2s,background 0.2s;}
 .ac-input:focus{border-color:var(--verde);background:white;}
-.ac-list{position:absolute;top:calc(100% + 2px);left:0;min-width:100%;width:max-content;max-width:520px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:9999;max-height:260px;overflow-y:auto;display:none;}
+.ac-list{position:absolute;top:calc(100% + 2px);left:0;min-width:100%;width:max-content;max-width:560px;background:white;border:1.5px solid var(--verde-m);border-radius:var(--radio);box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:9999;max-height:300px;overflow-y:auto;display:none;}
 .ac-list.open{display:block;}
 .ac-item{padding:9px 12px;font-size:12px;cursor:pointer;border-bottom:1px solid var(--gris);transition:background 0.15s;}
 .ac-item:hover{background:var(--verde-l);}
@@ -265,8 +265,8 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
         </div>
 
         <!-- Buscar Folio -->
-        <div class="section">
-          <div class="sb" style="padding:22px 24px;">
+        <div class="section" style="overflow:visible;">
+          <div class="sb" style="padding:22px 24px;overflow:visible;">
             <div style="display:flex;align-items:center;gap:18px;margin-bottom:16px;">
               <div style="width:48px;height:48px;background:var(--azul-l);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                 <span style="color:var(--azul);font-size:20px;">&#128269;</span>
@@ -277,7 +277,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
               </div>
             </div>
             <div style="display:flex;gap:8px;align-items:flex-start;">
-              <div class="ac-wrap" style="flex:1;">
+              <div class="ac-wrap" style="flex:1;position:relative;">
                 <input class="ac-input" id="ac-buscar-folio"
                   placeholder="Escribe el número de folio o haz clic para ver todos..."
                   onclick="acBuscarFolio(this.value)"
@@ -786,18 +786,16 @@ function acSelect(tipo, idx) {
     selElaboro=item.val;
   } else if(tipo==='partida'){
     selPartida=item.data;
-    document.getElementById('tipo-partida').value=item.data.tipo;
-    // Mostrar/ocultar aviso
-    document.getElementById('aviso-partida').style.display='none';
-    // Resetear conceptos cuando cambia la partida
+    const tp=document.getElementById('tipo-partida');if(tp)tp.value=item.data.tipo;
+    const ap=document.getElementById('aviso-partida');if(ap)ap.style.display='none';
     conceptos=mkC();renderConceptos();
     calcTotales();
   } else if(tipo==='prov'){
     selProv=item.data;
-    document.getElementById('num-prov').value=item.data.consecutivo;
-    document.getElementById('rfc-prov').value=item.data.rfc;
-    document.getElementById('dom-prov').value=item.data.domicilio||'';
-    document.getElementById('firma-prov-nombre').textContent=item.data.razon_social;
+    const np=document.getElementById('num-prov');if(np)np.value=item.data.consecutivo;
+    const rp=document.getElementById('rfc-prov');if(rp)rp.value=item.data.rfc;
+    const dp=document.getElementById('dom-prov');if(dp)dp.value=item.data.domicilio||'';
+    const fp=document.getElementById('firma-prov-nombre');if(fp)fp.textContent=item.data.razon_social;
     calcTotales();
   }
 }
