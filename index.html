@@ -689,12 +689,12 @@ async function mostrarApp() {
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app-screen').style.display='block';
   document.getElementById('topbar-user').textContent=userNombre;
-  document.getElementById('ac-elaboro').value='';
+  const _ace=document.getElementById('ac-elaboro');if(_ace)_ace.value='';
   selElaboro='';
-  document.getElementById('firma-prov-nombre').textContent='Proveedor';
+  const _fpn=document.getElementById('firma-prov-nombre');if(_fpn)_fpn.textContent='Proveedor';
   if(isAdmin){
     document.getElementById('role-badge').style.display='inline-block';
-    document.getElementById('sec-admin-usuarios').style.display='block';
+    const _sau=document.getElementById('sec-admin-usuarios');if(_sau)_sau.style.display='block';
     const tabs=document.getElementById('tabs-container');
     const sep=document.createElement('div');sep.className='tab-sep';tabs.appendChild(sep);
     const t1=document.createElement('div');t1.className='tab atab';t1.id='tab-aprobaciones';
