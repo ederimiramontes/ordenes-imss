@@ -63,7 +63,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .membrete-titulo h1{font-size:14px;font-weight:600;color:var(--verde);text-transform:uppercase;letter-spacing:0.06em;}
 .membrete-titulo p{font-size:11px;color:var(--sec);margin-top:3px;}
 .folio-badge{background:var(--verde);color:white;border-radius:var(--radio);padding:8px 16px;text-align:center;min-width:120px;}
-.folio-num{font-family:'IBM Plex Mono',monospace;font-size:17px;font-weight:500;}
+.folio-num{font-family:monospace;font-size:17px;font-weight:500;}
 .folio-lbl{font-size:9px;opacity:0.8;text-transform:uppercase;letter-spacing:0.08em;}
 
 /* SECCIONES */
@@ -103,7 +103,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .tbl th{background:var(--verde-l);color:var(--verde);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;padding:8px;text-align:left;border-bottom:2px solid var(--verde-m);}
 .tbl td{padding:5px 4px;border-bottom:1px solid var(--borde);vertical-align:middle;}
 .tbl .nc{width:28px;text-align:center;font-size:11px;font-weight:600;color:var(--sec);}
-.tbl .ic{font-family:'IBM Plex Mono',monospace;color:var(--verde);font-weight:500;text-align:right;padding-right:8px;white-space:nowrap;min-width:100px;}
+.tbl .ic{font-family:monospace;color:var(--verde);font-weight:500;text-align:right;padding-right:8px;white-space:nowrap;min-width:100px;}
 .tbl .r5-dot{width:14px;height:14px;border-radius:50%;background:var(--gris);border:1.5px solid var(--borde);display:inline-block;}
 .tbl .r5-dot.on{background:var(--guinda);border-color:var(--guinda);}
 
@@ -111,7 +111,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .totales{background:var(--verde-l);border:1.5px solid var(--verde-m);border-radius:var(--radio);padding:14px 18px;margin-top:10px;display:flex;justify-content:flex-end;}
 .tg{display:grid;grid-template-columns:auto auto;gap:5px 22px;align-items:center;}
 .tl{font-size:12px;color:var(--sec);text-align:right;font-weight:500;}
-.tv{font-family:'IBM Plex Mono',monospace;font-size:13px;text-align:right;font-weight:500;}
+.tv{font-family:monospace;font-size:13px;text-align:right;font-weight:500;}
 .tt .tl{color:var(--verde);font-size:14px;font-weight:600;}
 .tt .tv{color:var(--verde);font-size:16px;font-weight:600;}
 .tsep{grid-column:span 2;border-top:1.5px solid var(--verde-m);margin:3px 0;}
@@ -144,7 +144,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .lh{display:grid;grid-template-columns:100px 80px 1fr 120px 90px 90px 100px;gap:8px;padding:8px 14px;background:var(--verde-l);border-radius:var(--radio);border:1px solid var(--verde-m);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--verde);margin-bottom:6px;}
 .lr{display:grid;grid-template-columns:100px 80px 1fr 120px 90px 90px 100px;gap:8px;padding:10px 14px;background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:6px;align-items:center;font-size:12px;transition:border-color 0.2s,box-shadow 0.2s;}
 .lr:hover{border-color:var(--verde-m);box-shadow:0 2px 8px rgba(0,104,71,0.1);}
-.ft{font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:500;color:var(--verde);}
+.ft{font-family:monospace;font-size:11px;font-weight:500;color:var(--verde);}
 .sb-p{background:#fff3cd;color:#856404;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-align:center;white-space:nowrap;}
 .sb-a{background:#d1eddf;color:#155724;font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-align:center;white-space:nowrap;}
 .sb-r{background:#fde8ed;color:var(--guinda);font-size:10px;font-weight:600;padding:3px 8px;border-radius:20px;text-align:center;white-space:nowrap;}
@@ -169,7 +169,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
 .stat-card{background:white;border-radius:var(--radio);border:1px solid var(--borde);padding:16px 18px;box-shadow:var(--sombra);}
-.stat-num{font-family:'IBM Plex Mono',monospace;font-size:28px;font-weight:500;}
+.stat-num{font-family:monospace;font-size:28px;font-weight:500;}
 .stat-lbl{font-size:11px;color:var(--sec);margin-top:4px;text-transform:uppercase;letter-spacing:0.05em;}
 .s-vd .stat-num{color:var(--verde);}
 .s-gd .stat-num{color:var(--guinda);}
@@ -857,6 +857,32 @@ async function acBuscarFolio(val){
     .order('folio',{ascending:false})
     .limit(40);
   if(q) query=query.ilike('folio','%'+q+'%');
+  const {data,error}=await query;
+  if(error){
+    listEl.innerHTML='<div class="ac-item" style="color:var(--guinda)">Error: '+error.message+'</div>';
+    listEl.classList.add('open');
+    return;
+  }
+  if(!data||!data.length){
+    listEl.innerHTML='<div class="ac-item" style="color:var(--sec)">No se encontraron folios</div>';
+    listEl.classList.add('open');
+    return;
+  }
+  listEl._items=data;
+  listEl.innerHTML='';
+  data.forEach(function(o){
+    const ap=o.status&&o.status.toLowerCase().includes('aprobado');
+    const re=o.status&&o.status.toLowerCase().includes('rechazado');
+    const est=ap?'✓ Aprobado':re?'✗ Rechazado':'⏳ Pendiente';
+    const color=ap?'#155724':re?'#8b1a3e':'#856404';
+    const div=document.createElement('div');
+    div.className='ac-item';
+    div.innerHTML='<div class="ac-main" style="font-family:monospace;font-size:13px">'+o.folio+'</div>'+
+      '<div class="ac-sub">'+(o.nombre_proveedor||'—')+' · '+(o.unidad||'—')+
+      ' · <span style="color:'+color+'">'+est+'</span></div>';
+    div.addEventListener('click',function(){seleccionarFolioExistente(o.id);});
+    listEl.appendChild(div);
+  });
   listEl.classList.add('open');
 }
 
@@ -1129,7 +1155,7 @@ function renderLista(ordenes,cid,adm){
         <button class="btn btn-n" style="font-size:10px;padding:5px 9px;" onclick="abrirOrden('${o.id}',false)">Ver</button>
         ${puedeEliminar?`<button class="btn btn-r" style="font-size:10px;padding:5px 9px;" onclick="confirmarEliminar('${o.id}','${o.folio}')">Eliminar</button>`:''}
        </div>`;
-    return `<div class="lr"><div class="ft">${o.folio||'—'}</div><div style="font-size:11px;color:var(--sec)">${fecha}</div><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.nombre_proveedor||'—'}</div>${col4}<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--verde)">${fmt(o.total)}</div><div>${badge}</div><div>${accion}</div></div>`;
+    return `<div class="lr"><div class="ft">${o.folio||'—'}</div><div style="font-size:11px;color:var(--sec)">${fecha}</div><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.nombre_proveedor||'—'}</div>${col4}<div style="font-family:monospace;font-size:12px;color:var(--verde)">${fmt(o.total)}</div><div>${badge}</div><div>${accion}</div></div>`;
   }).join('');
 }
 
@@ -1144,7 +1170,7 @@ async function abrirOrden(id,puedeAprobar){
   document.getElementById('mtitulo').textContent='Orden '+o.folio+' — '+(ap?'Aprobada':re?'Rechazada':'Pendiente');
   document.getElementById('mbody').innerHTML=`
     <div class="det-grid">
-      <div class="det-item"><label>Folio</label><span style="font-family:'IBM Plex Mono',monospace">${o.folio}</span></div>
+      <div class="det-item"><label>Folio</label><span style="font-family:monospace">${o.folio}</span></div>
       <div class="det-item"><label>Status</label><span>${o.status}</span></div>
       <div class="det-item"><label>Solicitante</label><span>${o.nombre_solicitante||'—'}</span></div>
       <div class="det-item"><label>Fecha solicitud</label><span>${o.fecha_solicitud||'—'}</span></div>
@@ -1157,7 +1183,7 @@ async function abrirOrden(id,puedeAprobar){
     </div>
     <table class="tbl" style="margin-bottom:12px">
       <thead><tr><th class="nc">#</th><th>Descripción</th><th style="width:80px">Cant.</th><th style="width:100px">P.U.</th><th style="width:100px">Importe</th></tr></thead>
-      <tbody>${(cs||[]).map(c=>`<tr><td class="nc">${c.consecutivo}</td><td style="font-size:12px">${c.descripcion||''}</td><td style="text-align:center">${c.cantidad_solicitada}</td><td style="text-align:right;font-family:'IBM Plex Mono',monospace">${fmt(c.precio_unitario)}</td><td class="ic">${fmt(c.importe)}</td></tr>`).join('')}</tbody>
+      <tbody>${(cs||[]).map(c=>`<tr><td class="nc">${c.consecutivo}</td><td style="font-size:12px">${c.descripcion||''}</td><td style="text-align:center">${c.cantidad_solicitada}</td><td style="text-align:right;font-family:monospace">${fmt(c.precio_unitario)}</td><td class="ic">${fmt(c.importe)}</td></tr>`).join('')}</tbody>
     </table>
     <div class="totales"><div class="tg">
       <div class="tl">Subtotal:</div><div class="tv">${fmt(o.subtotal)}</div>
