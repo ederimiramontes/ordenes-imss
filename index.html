@@ -196,6 +196,14 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .field-err input,.field-err select,.field-err .ac-input{border-color:var(--guinda)!important;}
 .err-msg{font-size:10px;color:var(--guinda);margin-top:2px;}
 
+.pres-row{display:grid;grid-template-columns:1fr 110px 110px 110px 90px;gap:8px;padding:10px 14px;background:white;border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:6px;align-items:center;font-size:12px;transition:border-color 0.2s;}
+.pres-row:hover{border-color:var(--verde-m);}
+.pres-disponible{font-family:monospace;font-weight:600;font-size:13px;}
+.pres-ok{color:var(--verde);}
+.pres-bajo{color:#856404;}
+.pres-agotado{color:var(--guinda);}
+.hist-row{padding:10px 14px;background:var(--gris);border-radius:6px;margin-bottom:6px;font-size:12px;}
+.hist-monto{font-family:monospace;font-weight:600;color:var(--verde);}
 @media(max-width:700px){
   .g2,.g3,.g4{grid-template-columns:1fr;}
   .c2,.c3,.c4{grid-column:span 1;}
@@ -238,6 +246,7 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
     <div class="tab active" onclick="showTab('nueva')" id="tab-nueva">Gestionar Orden</div>
     <div class="tab" onclick="showTab('mis-ordenes')" id="tab-mis-ordenes">Mis Órdenes <span class="tab-badge" id="badge-mis">0</span></div>
     <div class="tab" onclick="showTab('proveedores')" id="tab-proveedores">Proveedores</div>
+    <div class="tab" onclick="showTab('presupuesto')" id="tab-presupuesto">Presupuesto</div>
   </div>
 
   <!-- TAB GESTIONAR ORDEN -->
@@ -610,6 +619,68 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
   </div>
 </div>
 
+
+  <!-- TAB PRESUPUESTO -->
+  <div id="content-presupuesto" style="display:none;">
+    <div class="page">
+      <div class="section" id="sec-captura-presupuesto2" style="display:none;">
+        <div class="sh sh-g">Asignar presupuesto a partida</div>
+        <div class="sb">
+          <div class="g3">
+            <div class="field c2">
+              <label>Partida Presupuestal <span class="req">*</span></label>
+              <div class="ac-wrap" style="position:relative;">
+                <input class="ac-input" id="ac-partida-pres" placeholder="Buscar partida..." onclick="acPresupuesto(this.value)" oninput="acPresupuesto(this.value)" autocomplete="off">
+                <div class="ac-list" id="acl-partida-pres"></div>
+              </div>
+              <input type="hidden" id="partida-pres-val">
+            </div>
+            <div class="field">
+              <label>Fecha <span class="req">*</span></label>
+              <input type="date" id="pres-fecha">
+            </div>
+            <div class="field">
+              <label>Monto (MXN) <span class="req">*</span></label>
+              <input type="number" id="pres-monto" min="0" step="0.01" placeholder="0.00">
+            </div>
+            <div class="field c2">
+              <label>Notas (opcional)</label>
+              <input type="text" id="pres-notas" placeholder="Ej: Asignación Q1, ampliación presupuestal...">
+            </div>
+            <div class="field" style="justify-content:flex-end;flex-direction:row;align-items:flex-end;">
+              <button class="btn btn-g" onclick="guardarPresupuesto()" id="btn-guardar-pres">Guardar Asignación</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sh sh-v">Presupuesto disponible por partida</div>
+        <div class="sb">
+          <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+            <input type="text" id="pres-filtro" placeholder="Filtrar por partida..." oninput="filtrarPresupuesto()" style="font-size:12px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;width:260px;">
+            <button class="btn btn-n" style="font-size:11px;padding:8px 14px;" onclick="cargarPresupuestos()">Actualizar</button>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 120px 120px 120px 90px;gap:8px;padding:8px 14px;background:var(--verde-l);border-radius:var(--radio);border:1px solid var(--verde-m);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--verde);margin-bottom:6px;">
+            <div>Partida</div>
+            <div style="text-align:right">Asignado</div>
+            <div style="text-align:right">En Folios</div>
+            <div style="text-align:right">Disponible</div>
+            <div style="text-align:center">Acción</div>
+          </div>
+          <div id="lista-presupuestos"><div class="empty">Cargando...</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sh sh-v">Historial de asignaciones</div>
+        <div class="sb">
+          <div id="historial-presupuestos"><div class="empty">Haz clic en una partida para ver su historial</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- MODAL DETALLE -->
 <div class="modal-bg" id="modal-orden">
   <div class="modal">
@@ -704,11 +775,13 @@ async function mostrarApp() {
     const t2=document.createElement('div');t2.className='tab atab';t2.id='tab-usuarios';
     t2.textContent='Usuarios';t2.onclick=()=>showTab('usuarios');tabs.appendChild(t2);
     document.getElementById('sec-sol-prov').style.display='block';
+    const secCap=document.getElementById('sec-captura-presupuesto2');if(secCap)secCap.style.display='block';
   }
   await initForm();
   showTab('nueva');
   cargarMisOrdenes();
   cargarProveedoresLista();
+  cargarPresupuestos();
   if(isAdmin){cargarTodasOrdenes();cargarSolicitudesProv();}
 }
 
@@ -721,7 +794,10 @@ function acOpen(tipo) {
   let items = [];
   if(tipo==='unidad') items = UNIDADES.slice(0,20).map(u=>({main:u.unidad,sub:'JCU: '+u.jcu+' · '+u.ui+'-'+u.cc,val:u.unidad,data:u}));
   else if(tipo==='elaboro') items = USUARIOS_CAT.map(u=>({main:u.nombre,sub:'',val:u.nombre,data:u}));
-  else if(tipo==='partida') items = PARTIDAS.map(p=>({main:p.clave,sub:p.descripcion,val:p.clave,data:p}));
+  else if(tipo==='partida') items = PARTIDAS.map(p=>{
+    const disp=p.disponible!==undefined?(' · Disp: $'+Math.round(p.disponible).toLocaleString('es-MX')):'';
+    return {main:p.clave,sub:p.descripcion+disp,val:p.clave,data:p};
+  });
   else if(tipo==='prov') items = PROVEEDORES_CAT.slice(0,20).map(p=>({main:p.razon_social,sub:'RFC: '+p.rfc,val:p.razon_social,data:p}));
   if(!items.length){acSearch(tipo,val);return;}
   // Filtrar si hay texto
@@ -753,9 +829,11 @@ function acSearch(tipo, val) {
       main:u.nombre, sub:'', val:u.nombre, data:u
     }));
   } else if(tipo==='partida'){
-    items=PARTIDAS.filter(p=>matchAll||p.clave.toLowerCase().includes(q)||p.descripcion.toLowerCase().includes(q)).slice(0,21).map(p=>({
-      main:p.clave, sub:p.descripcion, val:p.clave, data:p
-    }));
+    items=PARTIDAS.filter(p=>matchAll||p.clave.toLowerCase().includes(q)||p.descripcion.toLowerCase().includes(q)).slice(0,21).map(p=>{
+      const disp=p.disponible!==undefined?(' · Disp: $'+Math.round(p.disponible).toLocaleString('es-MX')):'';
+      return { main:p.clave, sub:p.descripcion+disp, val:p.clave, data:p
+    };
+    });
   } else if(tipo==='prov'){
     items=PROVEEDORES_CAT.filter(p=>matchAll||p.razon_social.toLowerCase().includes(q)||p.rfc.toLowerCase().includes(q)).slice(0,20).map(p=>({
       main:p.razon_social, sub:'RFC: '+p.rfc, val:p.razon_social, data:p
@@ -1412,7 +1490,7 @@ function exportCSV(tipo){
 }
 
 // ══ TABS ══
-const ALL_TABS=['nueva','mis-ordenes','proveedores','aprobaciones','usuarios'];
+const ALL_TABS=['nueva','mis-ordenes','proveedores','presupuesto','aprobaciones','usuarios'];
 function showTab(tab){
   ALL_TABS.forEach(t=>{
     const c=document.getElementById('content-'+t);
@@ -1422,6 +1500,7 @@ function showTab(tab){
   });
   if(tab==='usuarios'){cargarUsuarios();if(isAdmin)cargarSolicitudesUsr();}
   if(tab==='proveedores'){cargarProveedoresLista();if(isAdmin)cargarSolicitudesProv();}
+  if(tab==='presupuesto'){cargarPresupuestos();}
 }
 
 
@@ -1673,6 +1752,155 @@ async function generarPDF(id){
   // Guardar
   doc.save('Orden_'+o.folio+'.pdf');
   toast('✓ PDF generado: Orden_'+o.folio+'.pdf');
+}
+
+
+// ══ PRESUPUESTO ══
+let presupuestosData = [];
+let partidaPresSelected = null;
+
+function acPresupuesto(val) {
+  const listEl = document.getElementById('acl-partida-pres');
+  const q = (val||'').toLowerCase();
+  const usadas = presupuestosData.map(p=>p.partida);
+  const items = PARTIDAS.filter(p =>
+    !usadas.includes(p.clave) &&
+    (p.clave.toLowerCase().includes(q) || p.descripcion.toLowerCase().includes(q))
+  ).slice(0,15);
+  if(!items.length){listEl.classList.remove('open');return;}
+  listEl.innerHTML='';
+  items.forEach(function(p){
+    const div=document.createElement('div');
+    div.className='ac-item';
+    div.innerHTML='<div class="ac-main">'+p.clave+'</div><div class="ac-sub">'+p.descripcion+'</div>';
+    div.addEventListener('click',function(){
+      document.getElementById('ac-partida-pres').value=p.clave+' — '+p.descripcion.substring(0,40);
+      document.getElementById('partida-pres-val').value=p.clave;
+      partidaPresSelected=p;
+      listEl.classList.remove('open');
+    });
+    listEl.appendChild(div);
+  });
+  listEl.classList.add('open');
+}
+
+async function guardarPresupuesto(){
+  const partida=document.getElementById('partida-pres-val').value;
+  const monto=parseFloat(document.getElementById('pres-monto').value);
+  const fecha=document.getElementById('pres-fecha').value;
+  const notas=document.getElementById('pres-notas').value;
+  if(!partida){toast('Selecciona una partida',true);return;}
+  if(!monto||monto<=0){toast('Ingresa un monto válido',true);return;}
+  if(!fecha){toast('Selecciona una fecha',true);return;}
+  const btn=document.getElementById('btn-guardar-pres');
+  btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
+  const desc=PARTIDAS.find(p=>p.clave===partida)?.descripcion||'';
+  const {error}=await sb.from('presupuestos').insert([{
+    partida,descripcion_partida:desc,monto,fecha,notas,
+    creado_por:currentUser.id,nombre_creador:userNombre
+  }]);
+  if(error){toast('Error: '+error.message,true);btn.innerHTML='Guardar Asignación';btn.disabled=false;return;}
+  toast('✓ Presupuesto asignado correctamente');
+  btn.innerHTML='Guardar Asignación';btn.disabled=false;
+  document.getElementById('ac-partida-pres').value='';
+  document.getElementById('partida-pres-val').value='';
+  document.getElementById('pres-monto').value='';
+  document.getElementById('pres-notas').value='';
+  partidaPresSelected=null;
+  cargarPresupuestos();
+}
+
+async function cargarPresupuestos(){
+  // Obtener última asignación por partida
+  const {data:asig}=await sb.from('presupuestos')
+    .select('*').order('fecha',{ascending:false});
+  if(!asig) return;
+
+  // Agrupar: solo la más reciente por partida
+  const ultimasPorPartida={};
+  asig.forEach(a=>{
+    if(!ultimasPorPartida[a.partida]) ultimasPorPartida[a.partida]=a;
+  });
+
+  // Obtener totales de folios por partida (pendientes + aprobados)
+  const {data:folios}=await sb.from('ordenes')
+    .select('partida,total,status,fecha_solicitud')
+    .not('status','ilike','%rechazado%');
+
+  presupuestosData=Object.values(ultimasPorPartida).map(a=>{
+    // Solo folios desde la fecha de asignación
+    const consumido=(folios||[])
+      .filter(f=>f.partida===a.partida && f.fecha_solicitud>=a.fecha)
+      .reduce((s,f)=>s+(f.total||0),0);
+    const disponible=a.monto-consumido;
+    return {...a, consumido, disponible};
+  });
+
+  renderPresupuestos(presupuestosData);
+  // Actualizar catálogo de partidas con disponible
+  actualizarCatalogoPartidas();
+}
+
+function renderPresupuestos(lista){
+  const cont=document.getElementById('lista-presupuestos');
+  const q=(document.getElementById('pres-filtro')?.value||'').toLowerCase();
+  const filtrada=q?lista.filter(p=>p.partida.toLowerCase().includes(q)||p.descripcion_partida?.toLowerCase().includes(q)):lista;
+  if(!filtrada.length){cont.innerHTML='<div class="empty">No hay presupuestos asignados</div>';return;}
+  cont.innerHTML=filtrada.map(p=>{
+    const pct=p.monto>0?(p.consumido/p.monto)*100:0;
+    const cls=p.disponible<=0?'pres-agotado':pct>80?'pres-bajo':'pres-ok';
+    const deleteBtn=isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 8px;" onclick="verHistorial('${p.partida}')">Historial</button>`:'<span style="font-size:11px;color:var(--sec)">Ver</span>';
+    return `<div class="pres-row" onclick="verHistorial('${p.partida}')" style="cursor:pointer;">
+      <div>
+        <div style="font-weight:600;font-size:12px">${p.partida}</div>
+        <div style="font-size:10px;color:var(--sec)">${(p.descripcion_partida||'').substring(0,50)}</div>
+        <div style="margin-top:4px;height:4px;background:var(--gris);border-radius:2px;">
+          <div style="height:4px;border-radius:2px;background:${p.disponible<=0?'var(--guinda)':pct>80?'#f0a500':'var(--verde)'};width:${Math.min(100,pct).toFixed(0)}%"></div>
+        </div>
+      </div>
+      <div class="pres-disponible" style="text-align:right">${fmtPesos(p.monto)}</div>
+      <div class="pres-disponible pres-agotado" style="text-align:right">${fmtPesos(p.consumido)}</div>
+      <div class="pres-disponible ${cls}" style="text-align:right">${fmtPesos(p.disponible)}</div>
+      <div style="text-align:center">${isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 8px;" onclick="event.stopPropagation();verHistorial('${p.partida}')">Historial</button>`:'<span style="font-size:10px;color:var(--sec)">—</span>'}</div>
+    </div>`;
+  }).join('');
+}
+
+function filtrarPresupuesto(){
+  renderPresupuestos(presupuestosData);
+}
+
+async function verHistorial(partida){
+  const {data}=await sb.from('presupuestos')
+    .select('*').eq('partida',partida).order('fecha',{ascending:false});
+  const cont=document.getElementById('historial-presupuestos');
+  if(!data||!data.length){cont.innerHTML='<div class="empty">No hay historial para esta partida</div>';return;}
+  const desc=data[0].descripcion_partida||partida;
+  cont.innerHTML=`<div style="font-weight:600;color:var(--verde);margin-bottom:10px;font-size:13px">${partida} — ${desc}</div>`+
+    data.map(h=>`<div class="hist-row">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <span style="font-size:10px;color:var(--sec)">${h.fecha}</span>
+          ${h.notas?`<span style="font-size:11px;color:var(--sec);margin-left:10px">· ${h.notas}</span>`:''}
+        </div>
+        <span class="hist-monto">${fmtPesos(h.monto)}</span>
+      </div>
+      <div style="font-size:10px;color:var(--sec);margin-top:3px">Registrado por: ${h.nombre_creador||'—'}</div>
+    </div>`).join('');
+  // Scroll al historial
+  document.getElementById('historial-presupuestos').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function actualizarCatalogoPartidas(){
+  // Actualizar el catálogo PARTIDAS con el disponible para mostrarlo en el dropdown
+  presupuestosData.forEach(p=>{
+    const idx=PARTIDAS.findIndex(pa=>pa.clave===p.partida);
+    if(idx>=0) PARTIDAS[idx].disponible=p.disponible;
+  });
+}
+
+function fmtPesos(n){
+  return '$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
 }
 
 // ══ TOAST ══
