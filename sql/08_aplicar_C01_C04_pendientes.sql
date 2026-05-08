@@ -61,7 +61,14 @@ BEGIN
         updated_at = NOW()
   RETURNING ultimo INTO v_siguiente;
 
-  v_folio := v_anio::TEXT || LPAD(v_siguiente::TEXT, 4, '0');
+  -- IMPORTANTE: pad a mínimo 4 dígitos pero NO truncar si el contador es más largo.
+  -- LPAD(string, longitud, fill) en Postgres TRUNCA el string si excede la longitud
+  -- objetivo. Producción IMSS arrancó la numeración en ~34640 (continuidad con
+  -- el Excel histórico), así que el contador tiene 5 dígitos. Sin GREATEST, el
+  -- folio saldría truncado a 4 chars y crearía colisiones con folios pasados.
+  -- Detectado durante testing 2026-05-08 (sesión 1, Claude Code).
+  v_folio := v_anio::TEXT
+    || LPAD(v_siguiente::TEXT, GREATEST(4, LENGTH(v_siguiente::TEXT)), '0');
   RETURN v_folio;
 END;
 $$;
