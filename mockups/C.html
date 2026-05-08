@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup C — Form-first · Sistema de Gestión de Órdenes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f9fafb;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --border-strong: #d1d5db;
+  --text: #111827;
+  --text-muted: #6b7280;
+  --text-subtle: #9ca3af;
+  --accent: #059669;
+  --accent-soft: #d1fae5;
+  --accent-hover: #047857;
+  --success: #059669;
+  --warn: #d97706;
+  --warn-soft: #fef3c7;
+  --danger: #dc2626;
+  --danger-soft: #fee2e2;
+  --info: #2563eb;
+  --radius: 8px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+  --shadow-lg: 0 10px 25px rgba(0,0,0,0.08), 0 4px 10px rgba(0,0,0,0.04);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+.disclaimer-banner { background: #fef3c7; color: #78350f; font-size: 11px; text-align: center; padding: 6px 12px; border-bottom: 1px solid #fcd34d; font-weight: 500; }
+.disclaimer-banner a { color: #78350f; }
+
+/* LOGIN */
+#login-screen { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 28px); background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 50%, #f0fdfa 100%); padding: 20px; }
+.login-card { background: var(--surface); border-radius: 16px; padding: 48px 40px; width: 100%; max-width: 420px; box-shadow: var(--shadow-lg); }
+.login-brand { text-align: center; margin-bottom: 32px; }
+.login-brand .mark { display: inline-flex; width: 56px; height: 56px; border-radius: 14px; background: linear-gradient(135deg, var(--accent) 0%, #047857 100%); color: white; align-items: center; justify-content: center; font-weight: 700; font-size: 22px; margin-bottom: 18px; box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
+.login-brand h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.02em; }
+.login-brand p { font-size: 13px; color: var(--text-muted); }
+
+.field { margin-bottom: 20px; }
+.field label { display: block; font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+.field input, .field select, .field textarea { width: 100%; padding: 12px 14px; border: 1.5px solid var(--border-strong); border-radius: var(--radius); font-family: inherit; font-size: 14px; outline: none; transition: all 0.15s; background: var(--surface); }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(5,150,105,0.1); }
+.field-help { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 20px; border: 1.5px solid transparent; border-radius: var(--radius); font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+.btn-primary:hover { background: var(--accent-hover); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(5,150,105,0.25); }
+.btn-secondary { background: var(--surface); color: var(--text); border-color: var(--border-strong); }
+.btn-secondary:hover { background: var(--bg); border-color: var(--text-muted); }
+.btn-ghost { background: transparent; color: var(--accent); border: 0; padding: 8px 12px; }
+.btn-ghost:hover { background: var(--accent-soft); }
+.btn-block { width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+.btn-large { padding: 14px 28px; font-size: 15px; font-weight: 600; }
+.btn-sm { padding: 7px 12px; font-size: 13px; }
+.btn-danger { color: var(--danger); }
+.btn-danger:hover { background: var(--danger-soft); }
+.login-disclaimer { background: #fef3c7; color: #78350f; font-size: 12px; padding: 12px 14px; margin-top: 18px; border-radius: var(--radius); border-left: 4px solid #f59e0b; line-height: 1.5; }
+
+/* APP */
+#app-screen { display: none; }
+.topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 14px 32px; display: flex; align-items: center; gap: 24px; }
+.topbar-brand { display: flex; align-items: center; gap: 12px; }
+.topbar-brand .mark { display: inline-flex; width: 36px; height: 36px; border-radius: 10px; background: linear-gradient(135deg, var(--accent) 0%, #047857 100%); color: white; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; }
+.topbar-brand .name { font-size: 15px; font-weight: 600; line-height: 1.2; }
+.topbar-brand .sub { font-size: 11px; color: var(--text-muted); }
+.topbar-nav { display: flex; gap: 4px; margin-left: auto; }
+.topbar-nav-item { padding: 8px 16px; border-radius: var(--radius); font-size: 14px; color: var(--text); cursor: pointer; transition: all 0.15s; user-select: none; font-weight: 500; }
+.topbar-nav-item:hover { background: var(--bg); }
+.topbar-nav-item.active { background: var(--accent-soft); color: var(--accent); }
+.topbar-user { display: flex; align-items: center; gap: 10px; padding-left: 16px; border-left: 1px solid var(--border); }
+.topbar-user .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--accent); color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; }
+.topbar-user-info { font-size: 13px; line-height: 1.2; }
+.topbar-user-info .name { font-weight: 500; }
+.topbar-user-info .role { font-size: 11px; color: var(--text-muted); }
+
+.main { max-width: 880px; margin: 0 auto; padding: 40px 32px 80px; }
+.section-view { display: none; }
+.section-view.active { display: block; }
+
+/* MAIN HEADER */
+.page-header { margin-bottom: 32px; }
+.page-title { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.page-subtitle { font-size: 15px; color: var(--text-muted); }
+
+/* HERO CARD (inicio) */
+.hero-card { background: linear-gradient(135deg, var(--accent) 0%, #047857 100%); color: white; border-radius: 16px; padding: 36px 40px; margin-bottom: 24px; box-shadow: 0 8px 24px rgba(5,150,105,0.25); }
+.hero-greeting { font-size: 14px; opacity: 0.85; margin-bottom: 6px; }
+.hero-title { font-size: 24px; font-weight: 700; margin-bottom: 18px; letter-spacing: -0.01em; }
+.hero-actions { display: flex; gap: 10px; }
+.btn-on-hero { background: white; color: var(--accent); border: 0; padding: 10px 18px; border-radius: var(--radius); font-weight: 600; font-size: 14px; cursor: pointer; transition: all 0.15s; }
+.btn-on-hero:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.btn-on-hero-outline { background: transparent; color: white; border: 1.5px solid rgba(255,255,255,0.4); padding: 9px 17px; border-radius: var(--radius); font-weight: 500; font-size: 14px; cursor: pointer; transition: all 0.15s; }
+.btn-on-hero-outline:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.7); }
+
+/* STATS CARDS */
+.stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.stat-icon { width: 40px; height: 40px; border-radius: 10px; background: var(--accent-soft); display: flex; align-items: center; justify-content: center; margin-bottom: 14px; font-size: 18px; }
+.stat-label { font-size: 13px; color: var(--text-muted); }
+.stat-value { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+
+/* SECTION CARD */
+.section-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; margin-bottom: 20px; box-shadow: var(--shadow); }
+.section-card-header { display: flex; align-items: center; gap: 14px; margin-bottom: 22px; padding-bottom: 18px; border-bottom: 1px solid var(--border); }
+.section-step { width: 32px; height: 32px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+.section-step.completed { background: var(--accent); color: white; }
+.section-card-title { flex: 1; }
+.section-card-title h3 { font-size: 17px; font-weight: 600; }
+.section-card-title p { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-grid-3 { grid-template-columns: repeat(3, 1fr); }
+.form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; }
+
+/* FOLIO HERO */
+.folio-hero { background: var(--surface); border: 2px solid var(--accent); border-radius: 12px; padding: 24px 28px; margin-bottom: 24px; display: flex; align-items: center; gap: 24px; box-shadow: 0 4px 14px rgba(5,150,105,0.1); }
+.folio-hero-icon { width: 56px; height: 56px; border-radius: 14px; background: var(--accent-soft); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 28px; flex-shrink: 0; }
+.folio-hero-text .label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--accent); font-weight: 600; }
+.folio-hero-text .num { font-family: 'JetBrains Mono', 'SF Mono', monospace; font-size: 30px; font-weight: 700; color: var(--text); letter-spacing: 0.01em; }
+.folio-hero-text .meta { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+
+/* LIST CARDS */
+.order-list { display: flex; flex-direction: column; gap: 12px; }
+.order-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px 24px; display: grid; grid-template-columns: auto 1fr auto auto; gap: 20px; align-items: center; cursor: pointer; transition: all 0.15s; }
+.order-card:hover { border-color: var(--accent); box-shadow: 0 4px 12px rgba(0,0,0,0.06); transform: translateY(-1px); }
+.order-card .folio-side { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; color: var(--accent); }
+.order-card .info-side .title { font-size: 14px; font-weight: 600; }
+.order-card .info-side .meta { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+.order-card .total-side { text-align: right; font-family: 'JetBrains Mono', monospace; font-weight: 600; font-size: 15px; }
+.order-card .total-side .meta { font-size: 11px; font-weight: 400; color: var(--text-muted); margin-top: 2px; }
+.badge { display: inline-block; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.badge-pending { background: var(--warn-soft); color: var(--warn); }
+.badge-approved { background: var(--accent-soft); color: var(--accent); }
+.badge-rejected { background: var(--danger-soft); color: var(--danger); }
+
+/* TOOLBAR */
+.toolbar { display: flex; gap: 10px; align-items: center; margin-bottom: 20px; }
+.toolbar input[type=text] { flex: 1; max-width: 320px; padding: 10px 14px; border: 1.5px solid var(--border-strong); border-radius: var(--radius); font-family: inherit; font-size: 14px; }
+.toolbar select { padding: 10px 14px; border: 1.5px solid var(--border-strong); border-radius: var(--radius); font-family: inherit; font-size: 14px; background: var(--surface); }
+
+/* TOTALS */
+.totals-card { background: var(--bg); border-radius: var(--radius); padding: 18px 22px; }
+.totals-row { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+.totals-row.major { border-top: 2px solid var(--text); margin-top: 8px; padding-top: 12px; font-size: 18px; font-weight: 700; }
+.totals-row .val { font-family: 'JetBrains Mono', monospace; }
+
+@media (max-width: 768px) {
+  .topbar { flex-wrap: wrap; padding: 12px 16px; }
+  .topbar-nav { order: 3; width: 100%; overflow-x: auto; }
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .order-card { grid-template-columns: 1fr; gap: 12px; }
+  .main { padding: 24px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="disclaimer-banner">⚙ Sistema interno de gestión · No es portal oficial del IMSS · <a href="../privacidad.html" target="_blank">Aviso de privacidad</a> · <strong>MOCKUP C — Form-first</strong></div>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-brand">
+      <div class="mark">SO</div>
+      <h1>Sistema de Gestión de Órdenes</h1>
+      <p>Conservación y Servicios Generales — Delegación BC</p>
+    </div>
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input type="email" placeholder="usuario@correo.com">
+    </div>
+    <div class="field">
+      <label>Contraseña</label>
+      <input type="password" placeholder="Tu contraseña">
+    </div>
+    <button class="btn btn-primary btn-block" onclick="enterApp()">Iniciar sesión</button>
+    <div class="login-disclaimer"><strong>Aviso:</strong> Esta es una herramienta interna de gestión operativa. No constituye un sistema oficial del IMSS.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="topbar-brand">
+      <div class="mark">SO</div>
+      <div>
+        <div class="name">Sistema de Gestión de Órdenes</div>
+        <div class="sub">Conservación y Servicios Generales — Delegación BC</div>
+      </div>
+    </div>
+    <nav class="topbar-nav">
+      <div class="topbar-nav-item active" onclick="showSection('inicio', this)">Inicio</div>
+      <div class="topbar-nav-item" onclick="showSection('mis', this)">Mis órdenes</div>
+      <div class="topbar-nav-item" onclick="showSection('aprobaciones', this)">Aprobaciones</div>
+      <div class="topbar-nav-item" onclick="showSection('proveedores', this)">Proveedores</div>
+      <div class="topbar-nav-item" onclick="showSection('presupuesto', this)">Presupuesto</div>
+    </nav>
+    <div class="topbar-user">
+      <div class="avatar">EM</div>
+      <div class="topbar-user-info">
+        <div class="name">Eder Miramontes</div>
+        <div class="role">Administrador</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- INICIO -->
+    <section id="view-inicio" class="section-view active">
+      <div class="hero-card">
+        <div class="hero-greeting">Buenos días, Eder</div>
+        <div class="hero-title">¿Qué necesitas hacer hoy?</div>
+        <div class="hero-actions">
+          <button class="btn-on-hero" onclick="showSection('nueva')">+ Nueva orden de servicio</button>
+          <button class="btn-on-hero-outline" onclick="showSection('mis')">Ver mis órdenes</button>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-label">Órdenes este año</div>
+          <div class="stat-value">8</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon" style="background:var(--warn-soft)">⏳</div>
+          <div class="stat-label">Pendientes de aprobación</div>
+          <div class="stat-value">5</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">💰</div>
+          <div class="stat-label">Presupuesto disponible</div>
+          <div class="stat-value">$215K</div>
+        </div>
+      </div>
+
+      <div class="page-header"><h2 class="page-title" style="font-size:20px">Tus órdenes recientes</h2></div>
+      <div class="order-list">
+        <div class="order-card">
+          <div class="folio-side">202634647</div>
+          <div class="info-side"><div class="title">Servicios Industriales BC SA</div><div class="meta">Mantenimiento informáticos · 06/05/2026</div></div>
+          <div class="total-side">$48,300<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+        <div class="order-card">
+          <div class="folio-side">202634645</div>
+          <div class="info-side"><div class="title">Refacciones del Pacífico</div><div class="meta">Mantenimiento informáticos · 14/04/2026</div></div>
+          <div class="total-side">$22,940<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+        <div class="order-card">
+          <div class="folio-side">202634643</div>
+          <div class="info-side"><div class="title">Limpieza Industrial Norte</div><div class="meta">Servicios de limpieza · 16/04/2026</div></div>
+          <div class="total-side">$8,750<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- NUEVA ORDEN -->
+    <section id="view-nueva" class="section-view">
+      <div class="page-header">
+        <h1 class="page-title">Nueva orden de servicio</h1>
+        <p class="page-subtitle">Completa los pasos para registrar una nueva orden</p>
+      </div>
+
+      <div class="folio-hero">
+        <div class="folio-hero-icon">🎫</div>
+        <div class="folio-hero-text">
+          <div class="label">Folio asignado</div>
+          <div class="num">202634648</div>
+          <div class="meta">Solicitante: Eder Miramontes · Fecha: 8 de mayo de 2026</div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-step">1</div>
+          <div class="section-card-title"><h3>Información general</h3><p>Identifica la unidad médica y el tipo de orden</p></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Unidad médica <span style="color:var(--danger)">*</span></label><input type="text" placeholder="Buscar unidad..."><div class="field-help">Empieza a escribir el nombre o código JCU</div></div>
+          <div class="field"><label>Origen de la orden <span style="color:var(--danger)">*</span></label><select><option>Selecciona...</option><option>Limpieza</option><option>Reparación</option><option>Mantenimiento preventivo</option></select></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-step">2</div>
+          <div class="section-card-title"><h3>Proveedor</h3><p>Selecciona del catálogo o solicita alta de uno nuevo</p></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Razón social <span style="color:var(--danger)">*</span></label><input type="text" placeholder="Buscar proveedor..."></div>
+          <div class="field"><label>RFC</label><input type="text" disabled placeholder="Se llena automático"></div>
+        </div>
+        <div style="margin-top:14px"><button class="btn btn-ghost btn-sm">+ Solicitar alta de un proveedor nuevo</button></div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-step">3</div>
+          <div class="section-card-title"><h3>Partida presupuestal</h3><p>Asigna la partida de la cual se descontará el monto</p></div>
+        </div>
+        <div class="form-grid">
+          <div class="field"><label>Partida <span style="color:var(--danger)">*</span></label><input type="text" placeholder="Buscar partida..."></div>
+          <div class="field"><label>Tipo</label><select><option>Servicio subrogado</option><option>Compra emergente</option></select></div>
+        </div>
+      </div>
+
+      <div class="section-card">
+        <div class="section-card-header">
+          <div class="section-step">4</div>
+          <div class="section-card-title"><h3>Conceptos y totales</h3><p>Lista los conceptos y revisa el cálculo final</p></div>
+        </div>
+        <div style="margin-bottom:18px;padding:14px;background:var(--bg);border-radius:var(--radius);font-size:13px;color:var(--text-muted)">📝 Aquí irían los campos de conceptos uno a uno con cantidad, precio, importe</div>
+        <div class="totals-card">
+          <div class="totals-row"><span>Subtotal</span><span class="val">$0.00</span></div>
+          <div class="totals-row"><span>IVA (8%)</span><span class="val">$0.00</span></div>
+          <div class="totals-row"><span>Retención 5 al millar</span><span class="val">−$0.00</span></div>
+          <div class="totals-row"><span>Retención ISR (1%)</span><span class="val">−$0.00</span></div>
+          <div class="totals-row major"><span>Total a pagar</span><span class="val">$0.00</span></div>
+        </div>
+        <div class="form-actions" style="margin-top:24px">
+          <button class="btn btn-secondary" onclick="showSection('inicio')">Cancelar</button>
+          <button class="btn btn-primary btn-large">Guardar orden</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- MIS ÓRDENES -->
+    <section id="view-mis" class="section-view">
+      <div class="page-header">
+        <h1 class="page-title">Mis órdenes</h1>
+        <p class="page-subtitle">Lista de las órdenes que tú has creado</p>
+      </div>
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar folio o proveedor...">
+        <select><option>Todos los estados</option><option>Pendientes</option><option>Aprobadas</option><option>Rechazadas</option></select>
+        <button class="btn btn-primary" style="margin-left:auto" onclick="showSection('nueva')">+ Nueva orden</button>
+      </div>
+      <div class="order-list">
+        <div class="order-card">
+          <div class="folio-side">202634647</div>
+          <div class="info-side"><div class="title">Servicios Industriales BC SA</div><div class="meta">06/05/2026 · Mantenimiento informáticos · HGZ#1</div></div>
+          <div class="total-side">$48,300<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+        <div class="order-card">
+          <div class="folio-side">202634645</div>
+          <div class="info-side"><div class="title">Refacciones del Pacífico</div><div class="meta">14/04/2026 · Mantenimiento informáticos · UMF#15</div></div>
+          <div class="total-side">$22,940<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+        <div class="order-card">
+          <div class="folio-side">202634643</div>
+          <div class="info-side"><div class="title">Limpieza Industrial Norte</div><div class="meta">16/04/2026 · Servicios de limpieza · UMF#22</div></div>
+          <div class="total-side">$8,750<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+        <div class="order-card">
+          <div class="folio-side">202634642</div>
+          <div class="info-side"><div class="title">Mantenimiento Eléctrico SA</div><div class="meta">01/03/2026 · Mantenimiento informáticos · HGZ#1</div></div>
+          <div class="total-side">$15,200<div class="meta">Total</div></div>
+          <div><span class="badge badge-pending">Pendiente</span></div>
+        </div>
+        <div class="order-card">
+          <div class="folio-side">202634640</div>
+          <div class="info-side"><div class="title">Cómputo Empresarial</div><div class="meta">15/03/2026 · Mantenimiento informáticos · HGZ#1</div></div>
+          <div class="total-side">$100,000<div class="meta">Total</div></div>
+          <div><span class="badge badge-approved">Aprobada</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- APROBACIONES -->
+    <section id="view-aprobaciones" class="section-view">
+      <div class="page-header">
+        <h1 class="page-title">Aprobaciones pendientes</h1>
+        <p class="page-subtitle">Solicitudes que esperan tu revisión</p>
+      </div>
+      <div class="stats-grid" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card"><div class="stat-icon" style="background:var(--warn-soft)">⏳</div><div class="stat-label">Pendientes</div><div class="stat-value">5</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">Aprobadas hoy</div><div class="stat-value">2</div></div>
+        <div class="stat-card"><div class="stat-icon" style="background:var(--danger-soft)">⚠️</div><div class="stat-label">Antigüedad máxima</div><div class="stat-value">24d</div></div>
+      </div>
+      <div class="order-list">
+        <div class="order-card" style="grid-template-columns:auto 1fr auto auto auto">
+          <div class="folio-side">202634647</div>
+          <div class="info-side"><div class="title">Servicios Industriales BC SA</div><div class="meta">Solicitó: Eder Miramontes · 06/05/2026 · 2 días</div></div>
+          <div class="total-side">$48,300<div class="meta">Total</div></div>
+          <button class="btn btn-secondary btn-sm">Ver detalle</button>
+          <button class="btn btn-primary btn-sm">✓ Aprobar</button>
+        </div>
+        <div class="order-card" style="grid-template-columns:auto 1fr auto auto auto">
+          <div class="folio-side">202634645</div>
+          <div class="info-side"><div class="title">Refacciones del Pacífico</div><div class="meta">Solicitó: Eder Miramontes · 14/04/2026 · 24 días</div></div>
+          <div class="total-side">$22,940<div class="meta">Total</div></div>
+          <button class="btn btn-secondary btn-sm">Ver detalle</button>
+          <button class="btn btn-primary btn-sm">✓ Aprobar</button>
+        </div>
+        <div class="order-card" style="grid-template-columns:auto 1fr auto auto auto">
+          <div class="folio-side">202634643</div>
+          <div class="info-side"><div class="title">Limpieza Industrial Norte</div><div class="meta">Solicitó: Eder Miramontes · 16/04/2026 · 22 días</div></div>
+          <div class="total-side">$8,750<div class="meta">Total</div></div>
+          <button class="btn btn-secondary btn-sm">Ver detalle</button>
+          <button class="btn btn-primary btn-sm">✓ Aprobar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- PROVEEDORES -->
+    <section id="view-proveedores" class="section-view">
+      <div class="page-header">
+        <h1 class="page-title">Proveedores</h1>
+        <p class="page-subtitle">Catálogo de proveedores autorizados</p>
+      </div>
+      <div class="toolbar">
+        <input type="text" placeholder="Buscar...">
+        <button class="btn btn-secondary" style="margin-left:auto">+ Solicitar alta</button>
+      </div>
+      <div class="order-list">
+        <div class="order-card" style="grid-template-columns:1fr auto auto">
+          <div class="info-side"><div class="title">Servicios Industriales BC SA de CV</div><div class="meta">RFC: SIB840521ABC · Mexicali, BC · Persona moral</div></div>
+          <div style="font-size:13px;color:var(--text-muted)">IVA 8%</div>
+          <div><span class="badge badge-approved">Activo</span></div>
+        </div>
+        <div class="order-card" style="grid-template-columns:1fr auto auto">
+          <div class="info-side"><div class="title">Mantenimiento Norte SA</div><div class="meta">RFC: MAN920308XYZ · Tijuana, BC · Persona moral</div></div>
+          <div style="font-size:13px;color:var(--text-muted)">IVA 8%</div>
+          <div><span class="badge badge-approved">Activo</span></div>
+        </div>
+        <div class="order-card" style="grid-template-columns:1fr auto auto">
+          <div class="info-side"><div class="title">Carlos Pérez González</div><div class="meta">RFC: PEGC780215QWE · Mexicali, BC · Persona física</div></div>
+          <div style="font-size:13px;color:var(--text-muted)">IVA 8% · Ret. ISR 1%</div>
+          <div><span class="badge badge-approved">Activo</span></div>
+        </div>
+        <div class="order-card" style="grid-template-columns:1fr auto auto">
+          <div class="info-side"><div class="title">Refacciones del Pacífico SA</div><div class="meta">RFC: RPA950612RTY · Ensenada, BC · Persona moral</div></div>
+          <div style="font-size:13px;color:var(--text-muted)">IVA 8%</div>
+          <div><span class="badge badge-approved">Activo</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PRESUPUESTO -->
+    <section id="view-presupuesto" class="section-view">
+      <div class="page-header">
+        <h1 class="page-title">Presupuesto</h1>
+        <p class="page-subtitle">Disponible por partida presupuestal</p>
+      </div>
+      <div class="order-list">
+        <div class="section-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent)">42062506</div>
+              <div style="font-size:14px;margin-top:4px">Mantenimiento de bienes informáticos</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Disponible</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--accent)">$215,000</div>
+            </div>
+          </div>
+          <div style="background:var(--bg);border-radius:6px;height:8px;overflow:hidden"><div style="background:var(--accent);width:43%;height:100%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-muted)"><span>43% disponible</span><span>$285,000 / $500,000 comprometido</span></div>
+        </div>
+        <div class="section-card">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--accent)">42062502</div>
+              <div style="font-size:14px;margin-top:4px">Servicios de limpieza</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Disponible</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--accent)">$119,600</div>
+            </div>
+          </div>
+          <div style="background:var(--bg);border-radius:6px;height:8px;overflow:hidden"><div style="background:var(--accent);width:40%;height:100%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-muted)"><span>40% disponible</span><span>$180,400 / $300,000 comprometido</span></div>
+        </div>
+        <div class="section-card" style="border-color:var(--warn);background:#fffbeb">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+            <div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--warn)">42062510</div>
+              <div style="font-size:14px;margin-top:4px">Mantenimiento de inmuebles</div>
+              <div style="font-size:12px;color:var(--warn);margin-top:4px;font-weight:500">⚠ Cerca del límite</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Disponible</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--warn)">$40,000</div>
+            </div>
+          </div>
+          <div style="background:var(--bg);border-radius:6px;height:8px;overflow:hidden"><div style="background:var(--warn);width:97%;height:100%"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:12px;color:var(--text-muted)"><span>3% disponible</span><span>$1,160,000 / $1,200,000 comprometido</span></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+function enterApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+}
+function logout() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+}
+function showSection(id, el) {
+  document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  if (el) {
+    document.querySelectorAll('.topbar-nav-item').forEach(t => t.classList.remove('active'));
+    el.classList.add('active');
+  } else {
+    // From hero buttons, sync nav state
+    document.querySelectorAll('.topbar-nav-item').forEach(t => t.classList.remove('active'));
+    const map = {inicio: 0, mis: 1, aprobaciones: 2, proveedores: 3, presupuesto: 4};
+    const items = document.querySelectorAll('.topbar-nav-item');
+    if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
+  }
+  window.scrollTo(0, 0);
+}
+</script>
+
+</body>
+</html>
