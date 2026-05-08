@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex,nofollow">
+<title>Aviso de privacidad — Sistema interno de Órdenes de Servicio</title>
+<style>
+:root{
+  --texto:#1a1a1a;
+  --sec:#5a5a52;
+  --borde:#d1d1cc;
+  --aviso-bg:#fef3c7;
+  --aviso-borde:#f59e0b;
+  --aviso-tx:#78350f;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;background:#f4f4f2;color:var(--texto);line-height:1.6;}
+.disclaimer-banner{background:var(--aviso-bg);color:var(--aviso-tx);font-size:11px;text-align:center;padding:6px 12px;border-bottom:1px solid #fcd34d;font-weight:500;}
+.container{max-width:780px;margin:0 auto;padding:40px 24px 80px;}
+h1{font-size:24px;font-weight:600;margin-bottom:8px;}
+.subtitle{font-size:13px;color:var(--sec);margin-bottom:32px;}
+.notice{background:var(--aviso-bg);color:var(--aviso-tx);border-left:4px solid var(--aviso-borde);padding:16px 18px;border-radius:6px;margin-bottom:32px;font-size:13px;}
+h2{font-size:17px;font-weight:600;margin-top:32px;margin-bottom:12px;color:var(--texto);border-bottom:1px solid var(--borde);padding-bottom:6px;}
+p,li{font-size:14px;color:var(--texto);margin-bottom:12px;}
+ul{padding-left:24px;margin-bottom:16px;}
+li{margin-bottom:6px;}
+.back{display:inline-block;margin-top:32px;font-size:13px;color:var(--sec);text-decoration:underline;}
+.fecha{font-size:11px;color:var(--sec);margin-top:48px;border-top:1px solid var(--borde);padding-top:16px;}
+strong{font-weight:600;}
+</style>
+</head>
+<body>
+
+<div class="disclaimer-banner">
+  ⚙ Sistema interno de gestión · No es portal oficial del IMSS
+</div>
+
+<div class="container">
+
+<h1>Aviso de privacidad</h1>
+<div class="subtitle">Sistema interno de gestión de Órdenes de Servicio</div>
+
+<div class="notice">
+  <strong>Importante:</strong> Este aviso aplica a una herramienta interna
+  de gestión operativa, no a un sistema oficial del Instituto Mexicano del
+  Seguro Social (IMSS). Su uso es voluntario y se realiza como apoyo
+  administrativo dentro del área de Conservación y Servicios Generales de
+  la Delegación Baja California.
+</div>
+
+<h2>1. Identificación del responsable</h2>
+<p>
+  Esta herramienta digital es un desarrollo independiente operado por
+  Eder Miramontes, contratado bajo régimen de servicios profesionales.
+  No representa al Instituto Mexicano del Seguro Social ni a alguna
+  dependencia gubernamental, y no debe confundirse con sistemas oficiales
+  del Gobierno de México.
+</p>
+
+<h2>2. Datos personales que se recolectan</h2>
+<p>El sistema almacena la siguiente información:</p>
+<ul>
+  <li><strong>De usuarios del sistema</strong>: nombre completo, correo
+    electrónico, matrícula institucional, rol asignado.</li>
+  <li><strong>De proveedores</strong>: razón social, RFC, domicilio
+    fiscal, datos de contacto.</li>
+  <li><strong>De operaciones</strong>: folios de órdenes de servicio,
+    montos, partidas presupuestales, conceptos solicitados, fechas, status.</li>
+  <li><strong>Bitácora de auditoría</strong>: registro automático de qué
+    usuario realizó qué acción y en qué fecha (creación, aprobación,
+    rechazo y eliminación de órdenes).</li>
+</ul>
+
+<h2>3. Finalidad del tratamiento</h2>
+<p>Los datos se utilizan exclusivamente para:</p>
+<ul>
+  <li>Gestionar el ciclo de vida de las órdenes de servicio
+    (creación, aprobación, rechazo, eliminación).</li>
+  <li>Generar reportes presupuestales internos.</li>
+  <li>Mantener trazabilidad operativa con fines de auditoría interna.</li>
+  <li>Permitir la autenticación segura de usuarios autorizados.</li>
+</ul>
+<p>
+  <strong>No se comparte ni vende información a terceros.</strong>
+  No se utiliza para fines publicitarios, comerciales ni de mercadeo.
+</p>
+
+<h2>4. Conservación de datos</h2>
+<p>
+  Los registros se conservan mientras la herramienta esté en operación
+  para fines de auditoría administrativa interna. La eliminación de
+  órdenes utiliza el mecanismo de borrado lógico (soft delete) — los
+  datos no se destruyen físicamente para preservar trazabilidad.
+</p>
+
+<h2>5. Medidas de seguridad</h2>
+<p>El sistema implementa los siguientes controles:</p>
+<ul>
+  <li>Cifrado en tránsito mediante HTTPS (TLS).</li>
+  <li>Cifrado en reposo de la base de datos (Supabase / PostgreSQL).</li>
+  <li>Autenticación obligatoria para acceder a cualquier funcionalidad.</li>
+  <li>Bitácora de auditoría que registra cambios críticos.</li>
+  <li>Control de acceso a nivel de fila (Row-Level Security).</li>
+</ul>
+<p>
+  Aun así, al tratarse de una herramienta de apoyo no oficial, no se
+  garantizan los estándares de seguridad que pudieran exigirse a un
+  sistema institucional formal del Gobierno de México.
+</p>
+
+<h2>6. Derechos del titular (ARCO)</h2>
+<p>
+  Conforme a la Ley General de Protección de Datos Personales en Posesión
+  de Sujetos Obligados (LGPDPPSO), todo titular puede solicitar:
+</p>
+<ul>
+  <li><strong>Acceso</strong> a sus datos personales.</li>
+  <li><strong>Rectificación</strong> de datos inexactos o incompletos.</li>
+  <li><strong>Cancelación</strong> de datos cuando no sean necesarios.</li>
+  <li><strong>Oposición</strong> al tratamiento de sus datos.</li>
+</ul>
+<p>
+  Para ejercer estos derechos, el titular puede contactar al desarrollador
+  responsable mediante el correo electrónico institucional autorizado.
+</p>
+
+<h2>7. Cambios al aviso de privacidad</h2>
+<p>
+  El responsable se reserva el derecho de modificar este aviso. Cualquier
+  modificación será notificada a los usuarios mediante un aviso visible
+  dentro del sistema antes de la aplicación.
+</p>
+
+<h2>8. Aceptación</h2>
+<p>
+  Al ingresar al sistema y autenticarse, el usuario acepta los términos
+  expuestos en el presente aviso de privacidad.
+</p>
+
+<a href="index.html" class="back">← Volver al sistema</a>
+
+<div class="fecha">
+  Última actualización: 8 de mayo de 2026
+</div>
+
+</div>
+
+</body>
+</html>
