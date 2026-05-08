@@ -140,6 +140,14 @@ tr:hover td { background: #fafafa; }
 
 <div class="disclaimer-banner">⚙ Sistema interno de gestión · No es portal oficial del IMSS · <a href="../privacidad.html" target="_blank">Aviso de privacidad</a> · <strong>MOCKUP A — Linear-style</strong></div>
 
+<!-- TOGGLE DE VISTA DEMO (solo en mockup, no es parte del producto final) -->
+<div style="background:#1f2937;color:white;padding:8px 16px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:12px;">
+  <span style="opacity:0.7">Vista demo:</span>
+  <button onclick="setRole('admin')" id="role-admin-btn" style="background:#374151;color:white;border:0;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:500;">Administrador</button>
+  <button onclick="setRole('user')" id="role-user-btn" style="background:transparent;color:white;border:1px solid #4b5563;padding:5px 12px;border-radius:4px;cursor:pointer;font-size:11px;font-weight:500;">Usuario</button>
+  <span style="opacity:0.5;font-size:10px;margin-left:8px">↑ Cambia entre vistas para ver qué ve cada rol</span>
+</div>
+
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
@@ -199,7 +207,7 @@ tr:hover td { background: #fafafa; }
         </div>
       </div>
 
-      <div class="sidebar-section">
+      <div class="sidebar-section admin-only">
         <div class="sidebar-label">Administración</div>
         <div class="sidebar-item" onclick="showSection('aprobaciones', this)">
           <svg class="icon" viewBox="0 0 16 16" fill="currentColor"><path d="M14 4l-7 7-3-3 1.5-1.5L7 8l5.5-5.5L14 4z"/></svg>
@@ -212,7 +220,7 @@ tr:hover td { background: #fafafa; }
           <div class="avatar">EM</div>
           <div class="sidebar-user-info">
             <div class="sidebar-user-name">Eder Miramontes</div>
-            <div class="sidebar-user-role">Administrador</div>
+            <div class="sidebar-user-role" id="role-label">Administrador</div>
           </div>
           <button class="btn btn-ghost btn-sm" onclick="logout()" title="Cerrar sesión">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11 2a1 1 0 011 1v3h-2V4H4v8h6v-2h2v3a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1h8zm3 6l-3-3v2H7v2h4v2l3-3z"/></svg>
@@ -388,6 +396,29 @@ function showSection(id, el) {
   if (el) {
     document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
     el.classList.add('active');
+  }
+}
+function setRole(role) {
+  const adminOnly = document.querySelectorAll('.admin-only');
+  const label = document.getElementById('role-label');
+  const btnA = document.getElementById('role-admin-btn');
+  const btnU = document.getElementById('role-user-btn');
+  if (role === 'admin') {
+    adminOnly.forEach(el => el.style.display = '');
+    if (label) label.textContent = 'Administrador';
+    btnA.style.background = '#374151'; btnA.style.borderColor = '#374151';
+    btnU.style.background = 'transparent'; btnU.style.borderColor = '#4b5563';
+  } else {
+    adminOnly.forEach(el => el.style.display = 'none');
+    if (label) label.textContent = 'Usuario';
+    btnU.style.background = '#374151'; btnU.style.borderColor = '#374151';
+    btnA.style.background = 'transparent'; btnA.style.borderColor = '#4b5563';
+    // Si estaba en aprobaciones, regresa a inicio
+    if (document.getElementById('view-aprobaciones').classList.contains('active')) {
+      showSection('inicio');
+      document.querySelectorAll('.sidebar-item').forEach(i => i.classList.remove('active'));
+      document.querySelector('.sidebar-item').classList.add('active');
+    }
   }
 }
 </script>
