@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockups visuales — Sistema de Gestión de Órdenes</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Inter', system-ui, sans-serif; background: #f9fafb; color: #111827; line-height: 1.6; }
+.disclaimer-banner { background: #fef3c7; color: #78350f; font-size: 11px; text-align: center; padding: 6px 12px; border-bottom: 1px solid #fcd34d; font-weight: 500; }
+.container { max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; }
+h1 { font-size: 28px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 6px; }
+.subtitle { font-size: 15px; color: #6b7280; margin-bottom: 32px; }
+.intro { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 24px; margin-bottom: 32px; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.intro p { margin-bottom: 12px; }
+.intro p:last-child { margin-bottom: 0; }
+.intro strong { color: #111827; }
+.grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 32px; }
+@media (max-width: 768px) { .grid { grid-template-columns: 1fr; } }
+.mockup-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,0.04); transition: all 0.15s; cursor: pointer; }
+.mockup-card:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.08); border-color: #9ca3af; }
+.mockup-preview { height: 160px; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 700; color: white; }
+.mockup-a .mockup-preview { background: linear-gradient(135deg, #1e3a5f 0%, #18304d 100%); }
+.mockup-b .mockup-preview { background: linear-gradient(135deg, #1e293b 0%, #475569 100%); }
+.mockup-c .mockup-preview { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+.mockup-body { padding: 20px; }
+.mockup-name { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+.mockup-tag { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; margin-bottom: 12px; }
+.mockup-a .mockup-tag { background: #eef2f8; color: #1e3a5f; }
+.mockup-b .mockup-tag { background: #e2e8f0; color: #475569; }
+.mockup-c .mockup-tag { background: #d1fae5; color: #059669; }
+.mockup-desc { font-size: 13px; color: #6b7280; margin-bottom: 14px; line-height: 1.5; }
+.mockup-features { font-size: 12px; color: #9ca3af; margin-bottom: 14px; }
+.mockup-features li { margin-bottom: 4px; padding-left: 16px; position: relative; }
+.mockup-features li::before { content: "·"; position: absolute; left: 6px; color: #9ca3af; }
+.btn-open { display: block; width: 100%; padding: 10px; background: #111827; color: white; border: 0; border-radius: 6px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; text-align: center; text-decoration: none; transition: background 0.15s; }
+.btn-open:hover { background: #1f2937; }
+h2 { font-size: 18px; font-weight: 600; margin-top: 32px; margin-bottom: 14px; padding-bottom: 8px; border-bottom: 1px solid #e5e7eb; }
+.feedback-list { background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px 24px; }
+.feedback-list ul { padding-left: 20px; }
+.feedback-list li { margin-bottom: 8px; font-size: 14px; }
+.guard { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 14px 16px; border-radius: 6px; font-size: 13px; color: #78350f; margin-bottom: 24px; }
+.guard strong { color: #78350f; }
+</style>
+</head>
+<body>
+
+<div class="disclaimer-banner">⚙ Sistema interno de gestión · No es portal oficial del IMSS · <strong>MOCKUPS DE EVALUACIÓN</strong></div>
+
+<div class="container">
+
+<h1>Mockups visuales</h1>
+<div class="subtitle">Tres direcciones de rediseño del Sistema de Gestión de Órdenes — Conservación BC</div>
+
+<div class="guard">
+  <strong>Importante:</strong> Estos son <em>prototipos visuales</em> sin backend.
+  Los datos son ficticios. El objetivo es que Eder elija una dirección estética.
+  Después aplicamos esa dirección al <code>index.html</code> real conservando
+  toda la lógica de negocio actual.
+</div>
+
+<div class="intro">
+  <p>
+    <strong>Restricciones legales aplicadas a las 3 variantes</strong>
+    (basadas en el análisis legal sobre Shadow IT y LGPDPPSO):
+  </p>
+  <p>
+    ❌ No se usa el escudo nacional, logo IMSS, colores guinda oficiales ni la
+    tipografía GMX del Gobierno de México.
+  </p>
+  <p>
+    ✅ Cada variante incluye banner persistente "Sistema interno · No es portal
+    oficial del IMSS" + link al aviso de privacidad.
+  </p>
+  <p>
+    ✅ Identidad: solo texto plano. Cada mockup usa una marca abstracta de 2
+    letras como avatar gráfico, sin imitar instituciones.
+  </p>
+</div>
+
+<h2>Las tres direcciones</h2>
+
+<div class="grid">
+  <div class="mockup-card mockup-a" onclick="window.location='A.html'">
+    <div class="mockup-preview">SO</div>
+    <div class="mockup-body">
+      <div class="mockup-tag">A · Linear-style</div>
+      <div class="mockup-name">Minimalista limpio</div>
+      <p class="mockup-desc">Mucho espacio en blanco, sidebar fijo, jerarquía visual clara. Para usuarios que valoran tranquilidad visual y velocidad de uso.</p>
+      <ul class="mockup-features">
+        <li>Sidebar lateral con secciones</li>
+        <li>Color acento: azul marino</li>
+        <li>Tipografía Inter</li>
+        <li>Tablas espaciadas, tipografía monoespaciada para folios</li>
+        <li>Inspirado en Linear, Notion, Stripe Dashboard</li>
+      </ul>
+      <a class="btn-open" href="A.html">Abrir Mockup A →</a>
+    </div>
+  </div>
+
+  <div class="mockup-card mockup-b" onclick="window.location='B.html'">
+    <div class="mockup-preview">SO</div>
+    <div class="mockup-body">
+      <div class="mockup-tag">B · Dashboard denso</div>
+      <div class="mockup-name">Información a la vista</div>
+      <p class="mockup-desc">Mucha información por pantalla, tabs horizontales, tablas estilo spreadsheet, stats arriba. Para administradores que necesitan ver todo de un vistazo.</p>
+      <ul class="mockup-features">
+        <li>Topbar oscuro con tabs</li>
+        <li>Color acento: gris azulado</li>
+        <li>Tipografía system (rápida)</li>
+        <li>Tablas densas con filas alternadas</li>
+        <li>Inspirado en Airtable, Retool, Excel-style</li>
+      </ul>
+      <a class="btn-open" href="B.html">Abrir Mockup B →</a>
+    </div>
+  </div>
+
+  <div class="mockup-card mockup-c" onclick="window.location='C.html'">
+    <div class="mockup-preview">SO</div>
+    <div class="mockup-body">
+      <div class="mockup-tag">C · Form-first</div>
+      <div class="mockup-name">Cálido y guiado</div>
+      <p class="mockup-desc">Hero card de bienvenida, secciones numeradas con iconos, formularios claros. Para usuarios menos técnicos que quieren guías paso a paso.</p>
+      <ul class="mockup-features">
+        <li>Topbar simple + nav horizontal</li>
+        <li>Color acento: verde funcional</li>
+        <li>Tipografía Inter</li>
+        <li>Cards generosas, animaciones sutiles</li>
+        <li>Inspirado en Notion, Typeform, paneles modernos</li>
+      </ul>
+      <a class="btn-open" href="C.html">Abrir Mockup C →</a>
+    </div>
+  </div>
+</div>
+
+<h2>Cómo evaluarlos</h2>
+
+<div class="feedback-list">
+  <p style="margin-bottom:12px">Para cada mockup, abre y prueba estas pantallas:</p>
+  <ul>
+    <li><strong>Login</strong> — entra con cualquier correo/password (es solo demo)</li>
+    <li><strong>Inicio</strong> — la pantalla principal post-login</li>
+    <li><strong>Nueva orden</strong> — el flujo más crítico, el que más usan</li>
+    <li><strong>Mis órdenes</strong> — cómo se ve la lista que el usuario revisa todos los días</li>
+    <li><strong>Aprobaciones</strong> — vista admin (Eder)</li>
+    <li><strong>Proveedores</strong> y <strong>Presupuesto</strong> — tablas de referencia</li>
+  </ul>
+  <p style="margin-top:12px">Después de probar los 3, considera:</p>
+  <ul>
+    <li>¿Cuál te resulta más cómodo de leer?</li>
+    <li>¿Cuál se siente más "profesional" sin ser oficialista?</li>
+    <li>¿Cuál crees que tus usuarios entenderán mejor sin entrenamiento?</li>
+    <li>¿Hay elementos de uno que te gustaría mezclar con otro?</li>
+  </ul>
+</div>
+
+<h2>Después de elegir</h2>
+
+<div class="intro">
+  <p>
+    Cuando Eder elija una dirección (puede ser una pura o una mezcla), el siguiente
+    paso es <strong>migrar el <code>index.html</code> real</strong> al nuevo sistema
+    de diseño. Esto se hace <strong>en branch separado</strong>, con el mismo flujo
+    escalonado:
+  </p>
+  <p>
+    1. Migrar piel visual (CSS) sin tocar lógica de negocio<br>
+    2. Validar con <code>scripts/validate_html.sh</code><br>
+    3. Probar en branch · usuarios prueban en preview · feedback<br>
+    4. Iterar ajustes finos<br>
+    5. Merge a main cuando todo esté pulido
+  </p>
+  <p>
+    <strong>Tiempo estimado de la migración:</strong> 4-6 horas dependiendo de qué
+    tan diferente sea el mockup elegido vs el HTML actual.
+  </p>
+</div>
+
+</div>
+
+</body>
+</html>
