@@ -901,7 +901,14 @@ async function iniciarNuevoFolio(){
   document.getElementById('menu-gestion').style.display='none';
   document.getElementById('form-orden').style.display='block';
   document.getElementById('folio-display').textContent='Cargando...';
-  folioActual=await genFolio();
+  try {
+    folioActual=await genFolio();
+  } catch(e) {
+    toast(e.message || 'No se pudo generar el folio', true);
+    document.getElementById('form-orden').style.display='none';
+    document.getElementById('menu-gestion').style.display='block';
+    return;
+  }
   document.getElementById('folio-display').textContent=folioActual;
   selUnidad=null;selPartida=null;selProv=null;
   ['ac-unidad','ac-partida','ac-prov','especialidad','subespecialidad','destino',
@@ -975,25 +982,16 @@ async function initForm() {
   renderConceptos();
 }
 async function genFolio(){
-  try {
-    const y=new Date().getFullYear();
-    const {data,error}=await sb.from('ordenes')
-      .select('folio')
-      .like('folio', y+'%')
-      .order('folio', {ascending:false})
-      .limit(1);
-    if(error) throw error;
-    let siguiente = 1;
-    if(data && data.length > 0){
-      const ultimo = parseInt(data[0].folio.toString().slice(4)) || 0;
-      siguiente = ultimo + 1;
-    }
-    return y + String(siguiente).padStart(4,'0');
-  } catch(e) {
-    // Fallback: usar timestamp si falla Supabase
-    const y=new Date().getFullYear();
-    return y + String(Math.floor(Math.random()*9000)+1000);
+  // Genera el folio vía función atómica de Postgres (SECURITY DEFINER).
+  // Esto previene el bug recurrente de folios duplicados (race condition):
+  // dos usuarios concurrentes ahora reciben folios distintos garantizado.
+  // Ver sql/08_aplicar_C01_C04_pendientes.sql (función generar_folio_consecutivo).
+  const {data, error} = await sb.rpc('generar_folio_consecutivo');
+  if (error) {
+    console.error('Error generando folio:', error);
+    throw new Error('No se pudo generar el folio. Verifica tu conexión y vuelve a intentar.');
   }
+  return data; // ya viene formateado: "AAAANNNN"
 }
 function calcTiempo(){
   const i=document.getElementById('f-ini').value,t=document.getElementById('f-ter').value;
