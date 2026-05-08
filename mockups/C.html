@@ -163,6 +163,14 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
 
 <div class="disclaimer-banner">⚙ Sistema interno de gestión · No es portal oficial del IMSS · <a href="../privacidad.html" target="_blank">Aviso de privacidad</a> · <strong>MOCKUP C — Form-first</strong></div>
 
+<!-- TOGGLE DE VISTA DEMO -->
+<div style="background:#064e3b;color:white;padding:8px 16px;font-size:12px;display:flex;align-items:center;justify-content:center;gap:12px;">
+  <span style="opacity:0.7">Vista demo:</span>
+  <button onclick="setRole('admin')" id="role-admin-btn" style="background:#059669;color:white;border:0;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500;">Administrador</button>
+  <button onclick="setRole('user')" id="role-user-btn" style="background:transparent;color:white;border:1px solid #047857;padding:5px 12px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:500;">Usuario</button>
+  <span style="opacity:0.5;font-size:10px;margin-left:8px">↑ Cambia entre vistas para ver qué ve cada rol</span>
+</div>
+
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
@@ -197,7 +205,7 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
     <nav class="topbar-nav">
       <div class="topbar-nav-item active" onclick="showSection('inicio', this)">Inicio</div>
       <div class="topbar-nav-item" onclick="showSection('mis', this)">Mis órdenes</div>
-      <div class="topbar-nav-item" onclick="showSection('aprobaciones', this)">Aprobaciones</div>
+      <div class="topbar-nav-item admin-only" onclick="showSection('aprobaciones', this)">Aprobaciones</div>
       <div class="topbar-nav-item" onclick="showSection('proveedores', this)">Proveedores</div>
       <div class="topbar-nav-item" onclick="showSection('presupuesto', this)">Presupuesto</div>
     </nav>
@@ -205,7 +213,7 @@ body { font-family: 'Inter', -apple-system, system-ui, sans-serif; background: v
       <div class="avatar">EM</div>
       <div class="topbar-user-info">
         <div class="name">Eder Miramontes</div>
-        <div class="role">Administrador</div>
+        <div class="role" id="role-label">Administrador</div>
       </div>
       <button class="btn btn-ghost btn-sm" onclick="logout()">Salir</button>
     </div>
@@ -520,13 +528,34 @@ function showSection(id, el) {
     document.querySelectorAll('.topbar-nav-item').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
   } else {
-    // From hero buttons, sync nav state
     document.querySelectorAll('.topbar-nav-item').forEach(t => t.classList.remove('active'));
     const map = {inicio: 0, mis: 1, aprobaciones: 2, proveedores: 3, presupuesto: 4};
     const items = document.querySelectorAll('.topbar-nav-item');
     if (map[id] !== undefined && items[map[id]]) items[map[id]].classList.add('active');
   }
   window.scrollTo(0, 0);
+}
+function setRole(role) {
+  const adminOnly = document.querySelectorAll('.admin-only');
+  const label = document.getElementById('role-label');
+  const btnA = document.getElementById('role-admin-btn');
+  const btnU = document.getElementById('role-user-btn');
+  if (role === 'admin') {
+    adminOnly.forEach(el => el.style.display = '');
+    if (label) label.textContent = 'Administrador';
+    btnA.style.background = '#059669'; btnA.style.borderColor = '#059669';
+    btnU.style.background = 'transparent'; btnU.style.borderColor = '#047857';
+  } else {
+    adminOnly.forEach(el => el.style.display = 'none');
+    if (label) label.textContent = 'Usuario';
+    btnU.style.background = '#059669'; btnU.style.borderColor = '#059669';
+    btnA.style.background = 'transparent'; btnA.style.borderColor = '#047857';
+    if (document.getElementById('view-aprobaciones').classList.contains('active')) {
+      showSection('inicio');
+      document.querySelectorAll('.topbar-nav-item').forEach(t => t.classList.remove('active'));
+      document.querySelector('.topbar-nav-item').classList.add('active');
+    }
+  }
 }
 </script>
 

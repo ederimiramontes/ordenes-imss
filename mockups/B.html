@@ -132,6 +132,14 @@ tr:hover td { background: #f1f5f9; }
 
 <div class="disclaimer-banner">⚙ Sistema interno de gestión · No es portal oficial del IMSS · <a href="../privacidad.html" target="_blank">Aviso de privacidad</a> · <strong>MOCKUP B — Dashboard denso</strong></div>
 
+<!-- TOGGLE DE VISTA DEMO -->
+<div style="background:#0f172a;color:white;padding:6px 16px;font-size:11px;display:flex;align-items:center;justify-content:center;gap:10px;">
+  <span style="opacity:0.6">Vista demo:</span>
+  <button onclick="setRole('admin')" id="role-admin-btn" style="background:#1e40af;color:white;border:0;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;">ADMIN</button>
+  <button onclick="setRole('user')" id="role-user-btn" style="background:transparent;color:#cbd5e1;border:1px solid #334155;padding:4px 10px;border-radius:3px;cursor:pointer;font-size:10px;font-weight:600;">USUARIO</button>
+  <span style="opacity:0.4;font-size:10px;margin-left:8px">↑ Cambia entre vistas</span>
+</div>
+
 <!-- LOGIN -->
 <div id="login-screen">
   <div class="login-card">
@@ -159,12 +167,12 @@ tr:hover td { background: #f1f5f9; }
       <div class="topbar-tab active" onclick="showSection('inicio', this)">Resumen</div>
       <div class="topbar-tab" onclick="showSection('nueva', this)">Nueva orden</div>
       <div class="topbar-tab" onclick="showSection('mis', this)">Mis órdenes <span class="badge-mini">8</span></div>
-      <div class="topbar-tab" onclick="showSection('aprobaciones', this)">Aprobaciones <span class="badge-mini">5</span></div>
+      <div class="topbar-tab admin-only" onclick="showSection('aprobaciones', this)">Aprobaciones <span class="badge-mini">5</span></div>
       <div class="topbar-tab" onclick="showSection('proveedores', this)">Proveedores</div>
       <div class="topbar-tab" onclick="showSection('presupuesto', this)">Presupuesto</div>
     </div>
     <div class="topbar-right">
-      <span class="role-tag">ADMIN</span>
+      <span class="role-tag" id="role-tag">ADMIN</span>
       <span class="user">Eder Miramontes</span>
       <button class="btn btn-secondary btn-sm" onclick="logout()">Salir</button>
     </div>
@@ -378,6 +386,28 @@ function showSection(id, el) {
   if (el) {
     document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
     el.classList.add('active');
+  }
+}
+function setRole(role) {
+  const adminOnly = document.querySelectorAll('.admin-only');
+  const tag = document.getElementById('role-tag');
+  const btnA = document.getElementById('role-admin-btn');
+  const btnU = document.getElementById('role-user-btn');
+  if (role === 'admin') {
+    adminOnly.forEach(el => el.style.display = '');
+    if (tag) { tag.textContent = 'ADMIN'; tag.style.background = '#f59e0b'; tag.style.color = '#422006'; }
+    btnA.style.background = '#1e40af'; btnA.style.borderColor = '#1e40af';
+    btnU.style.background = 'transparent'; btnU.style.borderColor = '#334155'; btnU.style.color = '#cbd5e1';
+  } else {
+    adminOnly.forEach(el => el.style.display = 'none');
+    if (tag) { tag.textContent = 'USUARIO'; tag.style.background = '#475569'; tag.style.color = 'white'; }
+    btnU.style.background = '#1e40af'; btnU.style.borderColor = '#1e40af'; btnU.style.color = 'white';
+    btnA.style.background = 'transparent'; btnA.style.borderColor = '#334155';
+    if (document.getElementById('view-aprobaciones').classList.contains('active')) {
+      showSection('inicio');
+      document.querySelectorAll('.topbar-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.topbar-tab').classList.add('active');
+    }
   }
 }
 </script>
