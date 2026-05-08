@@ -3,21 +3,30 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IMSS BC — Órdenes de Servicio</title>
+<title>Sistema de Gestión de Órdenes — Conservación BC</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --verde:#006847;--verde-l:#e8f4ef;--verde-m:#c3ddd5;
-  --guinda:#8b1a3e;--guinda-l:#f5e8ed;
-  --azul:#1a4e8b;--azul-l:#e8f0fa;
-  --gris:#f4f4f2;--borde:#d1d1cc;
-  --texto:#1a1a1a;--sec:#5a5a52;
-  --radio:7px;--sombra:0 2px 12px rgba(0,104,71,0.10);
+  /* Paleta base (Mockup C - Form-first / verde funcional).
+     Variables conservadas con sus nombres originales para no romper
+     reglas CSS existentes; los valores se actualizaron al sistema nuevo. */
+  --verde:#059669;--verde-l:#d1fae5;--verde-m:#a7f3d0;
+  --verde-hover:#047857;
+  --guinda:#dc2626;--guinda-l:#fee2e2;  /* errores y rechazos */
+  --azul:#2563eb;--azul-l:#dbeafe;       /* admin badges, info */
+  --warn:#d97706;--warn-l:#fef3c7;       /* pendientes, aviso */
+  --gris:#f9fafb;--borde:#e5e7eb;
+  --borde-strong:#d1d5db;
+  --texto:#111827;--sec:#6b7280;--sec-l:#9ca3af;
+  --surface:#ffffff;
+  --radio:8px;
+  --sombra:0 1px 3px rgba(0,0,0,0.05),0 1px 2px rgba(0,0,0,0.03);
+  --sombra-lg:0 10px 25px rgba(0,0,0,0.08),0 4px 10px rgba(0,0,0,0.04);
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto);min-height:100vh;}
+body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gris);color:var(--texto);min-height:100vh;-webkit-font-smoothing:antialiased;font-size:14px;line-height:1.5;}
 
 /* BANNER NO-OFICIAL — aviso legal persistente.
    Importante: deja claro que este es un sistema interno de gestion y no
@@ -34,20 +43,23 @@ body{font-family:'IBM Plex Sans',sans-serif;background:#eef0eb;color:var(--texto
 .notice-box strong{color:#78350f;}
 .btn-disabled{opacity:0.5;cursor:not-allowed!important;pointer-events:none;}
 
-/* LOGIN */
-#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#004d35 0%,#006847 60%,#00855c 100%);}
-.login-card{background:white;border-radius:16px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
-.login-logo{text-align:center;margin-bottom:28px;}
-.login-logo img{height:160px;object-fit:contain;}
-.login-logo h2{font-size:15px;font-weight:600;color:var(--verde);margin-top:12px;text-transform:uppercase;letter-spacing:0.06em;}
-.login-logo p{font-size:11px;color:var(--sec);margin-top:4px;}
-.lf{margin-bottom:16px;}
-.lf label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--verde);margin-bottom:5px;}
-.lf input{width:100%;padding:11px 14px;border:1.5px solid var(--borde);border-radius:var(--radio);font-family:'IBM Plex Sans',sans-serif;font-size:14px;outline:none;transition:border-color 0.2s;}
-.lf input:focus{border-color:var(--verde);}
-.btn-login{width:100%;padding:13px;background:var(--verde);color:white;border:none;border-radius:var(--radio);font-family:'IBM Plex Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;text-transform:uppercase;transition:background 0.2s;margin-top:6px;}
-.btn-login:hover{background:#004d35;}
-.login-err{background:#fde8ed;color:var(--guinda);border-radius:6px;padding:10px 14px;font-size:12px;margin-top:12px;display:none;}
+/* LOGIN — Mockup C: hero verde, card amplio, mark abstract.
+   Conserva clases existentes (.login-card, .login-logo, .lf, .btn-login, .login-err)
+   para no romper JS, solo actualiza estética. El logo IMSS embebido se conserva
+   por ahora (decision pendiente de Eder en Fase 3). */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 28px);background:linear-gradient(135deg,#f0fdf4 0%,#ecfdf5 50%,#f0fdfa 100%);padding:20px;}
+.login-card{background:var(--surface);border-radius:16px;padding:48px 40px;width:100%;max-width:420px;box-shadow:var(--sombra-lg);}
+.login-logo{text-align:center;margin-bottom:32px;}
+.login-logo img{height:140px;object-fit:contain;margin-bottom:6px;}
+.login-logo h2{font-size:20px;font-weight:700;color:var(--texto);margin-top:14px;letter-spacing:-0.01em;}
+.login-logo p{font-size:13px;color:var(--sec);margin-top:6px;}
+.lf{margin-bottom:18px;}
+.lf label{display:block;font-size:13px;font-weight:500;color:var(--texto);margin-bottom:6px;text-transform:none;letter-spacing:0;}
+.lf input{width:100%;padding:12px 14px;border:1.5px solid var(--borde-strong);border-radius:var(--radio);font-family:inherit;font-size:14px;outline:none;transition:all 0.15s;background:var(--surface);color:var(--texto);}
+.lf input:focus{border-color:var(--verde);box-shadow:0 0 0 4px rgba(5,150,105,0.1);}
+.btn-login{width:100%;padding:13px;background:var(--verde);color:white;border:none;border-radius:var(--radio);font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:all 0.15s;margin-top:8px;text-transform:none;letter-spacing:0;}
+.btn-login:hover{background:var(--verde-hover);transform:translateY(-1px);box-shadow:0 4px 12px rgba(5,150,105,0.25);}
+.login-err{background:var(--guinda-l);color:var(--guinda);border-radius:var(--radio);padding:10px 14px;font-size:12px;margin-top:12px;display:none;border-left:3px solid var(--guinda);}
 
 /* APP */
 #app-screen{display:none;}
