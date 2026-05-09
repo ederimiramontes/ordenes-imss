@@ -15,6 +15,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.1.6/purify.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -303,6 +304,11 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
 .cola-panel-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
 .cola-panel-title{font-size:14px;font-weight:600;color:var(--texto);}
 .cola-panel-badge{background:var(--warn);color:white;font-size:11px;font-weight:600;padding:2px 10px;border-radius:10px;}
+.rp-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;}
+.rp-chart-box{background:var(--surface);border:1px solid var(--borde);border-radius:12px;padding:18px 20px;box-shadow:var(--sombra);}
+.rp-chart-title{font-size:13px;font-weight:600;color:var(--texto);margin-bottom:14px;}
+.rp-preset{font-family:inherit;font-size:11px;padding:5px 10px;border-radius:6px;border:1px solid var(--borde);background:var(--surface);color:var(--texto);cursor:pointer;transition:all 0.15s;}
+.rp-preset:hover,.rp-preset.active{background:var(--verde);color:white;border-color:var(--verde);}
 .cola-col-hdr{display:grid;grid-template-columns:110px 1fr 100px 90px auto;gap:10px;padding:5px 16px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--sec);margin-bottom:6px;}
 @media(max-width:700px){
   .g2,.g3,.g4{grid-template-columns:1fr;}
@@ -672,10 +678,27 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
             <div class="field c2"><label>Razón Social <span class="req">*</span></label><input type="text" id="np-nombre" placeholder="Nombre o razón social completa"></div>
             <div class="field"><label>RFC <span class="req">*</span></label><input type="text" id="np-rfc" placeholder="XXXX-000000-XXX" style="text-transform:uppercase;"></div>
             <div class="field c2"><label>Domicilio</label><input type="text" id="np-dom" placeholder="Calle, número, colonia, ciudad, C.P."></div>
+            <div class="field c3">
+              <label>Constancia de Situación Fiscal <span style="font-weight:400;color:var(--sec)">(PDF, JPG o PNG — máx 5MB)</span></label>
+              <input type="file" id="np-csf" accept=".pdf,.jpg,.jpeg,.png" style="font-size:12px;padding:8px;border:1.5px solid var(--borde-strong);border-radius:var(--radio);background:var(--surface);width:100%;">
+              <span style="font-size:10px;color:var(--sec)">Documento del SAT que acredita el RFC y la situación fiscal del proveedor</span>
+            </div>
             <div class="field"><label>Tasa IVA</label>
               <select id="np-iva"><option value="0.08">8%</option><option value="0.16">16%</option></select>
             </div>
-            <div class="field c3" style="flex-direction:row;align-items:flex-end;justify-content:flex-end;">
+            <div class="field">
+              <label>Zona de operación</label>
+              <select id="np-zona" style="font-size:13px;">
+                <option value="">Todo Baja California</option>
+                <option value="M">Solo Mexicali</option>
+                <option value="T">Solo Tijuana</option>
+                <option value="E">Solo Ensenada</option>
+                <option value="M,T">Mexicali y Tijuana</option>
+                <option value="M,E">Mexicali y Ensenada</option>
+                <option value="T,E">Tijuana y Ensenada</option>
+              </select>
+            </div>
+            <div class="field c2" style="flex-direction:row;align-items:flex-end;justify-content:flex-end;">
               <button class="btn btn-g" onclick="solicitarProveedor()">Enviar Solicitud</button>
             </div>
           </div>
@@ -971,6 +994,71 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
     </div>
   </div>
 
+<!-- TAB REPORTES (Admin) -->
+  <div id="content-reportes" style="display:none;">
+    <div class="page">
+      <div class="filtros" style="margin-bottom:16px;">
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--sec);margin-bottom:6px;">Período rápido</div>
+            <div style="display:flex;gap:4px;">
+              <button class="rp-preset" onclick="setPeriodo('semana',this)">Esta semana</button>
+              <button class="rp-preset" onclick="setPeriodo('mes',this)">Este mes</button>
+              <button class="rp-preset active" onclick="setPeriodo('bimestre',this)">Bimestre</button>
+              <button class="rp-preset" onclick="setPeriodo('trimestre',this)">Trimestre</button>
+              <button class="rp-preset" onclick="setPeriodo('anio',this)">Este año</button>
+            </div>
+          </div>
+          <div class="field" style="gap:4px;">
+            <label>Desde</label>
+            <input type="date" id="rp-desde" oninput="cargarReportes()">
+          </div>
+          <div class="field" style="gap:4px;">
+            <label>Hasta</label>
+            <input type="date" id="rp-hasta" oninput="cargarReportes()">
+          </div>
+          <div class="field" style="gap:4px;">
+            <label>Partida</label>
+            <select id="rp-partida" onchange="cargarReportes()" style="font-size:12px;">
+              <option value="">Todas</option>
+            </select>
+          </div>
+          <div class="field" style="gap:4px;">
+            <label>Estado</label>
+            <select id="rp-status" onchange="cargarReportes()" style="font-size:12px;">
+              <option value="">Todos</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="aprobado">Aprobado</option>
+              <option value="rechazado">Rechazado</option>
+            </select>
+          </div>
+          <button class="btn btn-n" onclick="exportarReporteCSV()" style="font-size:11px;padding:8px 14px;">Exportar CSV</button>
+        </div>
+      </div>
+      <div class="stats-grid" id="rp-kpis" style="margin-bottom:20px;"></div>
+      <div class="rp-grid">
+        <div class="rp-chart-box">
+          <div class="rp-chart-title">Monto por Partida</div>
+          <canvas id="chart-partidas"></canvas>
+        </div>
+        <div class="rp-chart-box">
+          <div class="rp-chart-title">Top Proveedores</div>
+          <canvas id="chart-proveedores"></canvas>
+        </div>
+      </div>
+      <div class="rp-grid">
+        <div class="rp-chart-box">
+          <div class="rp-chart-title">Órdenes por Estado</div>
+          <canvas id="chart-estados" style="max-height:240px;"></canvas>
+        </div>
+        <div class="rp-chart-box">
+          <div class="rp-chart-title">Top Unidades por Monto</div>
+          <canvas id="chart-unidades"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
 <!-- MODAL DETALLE -->
 <div class="modal-bg" id="modal-orden">
   <div class="modal">
@@ -1078,6 +1166,8 @@ async function mostrarApp() {
     const t1=document.createElement('div');t1.className='tab atab';t1.id='tab-aprobaciones';
     t1.innerHTML='Aprobaciones <span class="tab-badge" id="badge-admin">0</span>';
     t1.onclick=()=>showTab('aprobaciones');tabs.appendChild(t1);
+    const tRp=document.createElement('div');tRp.className='tab atab';tRp.id='tab-reportes';
+    tRp.textContent='Reportes';tRp.onclick=()=>showTab('reportes');tabs.appendChild(tRp);
     const t2=document.createElement('div');t2.className='tab atab';t2.id='tab-usuarios';
     t2.textContent='Usuarios';t2.onclick=()=>showTab('usuarios');tabs.appendChild(t2);
     document.getElementById('sec-sol-prov').style.display='block';
@@ -1146,8 +1236,20 @@ function acSearch(tipo, val) {
     };
     });
   } else if(tipo==='prov'){
-    items=PROVEEDORES_CAT.filter(p=>matchAll||p.razon_social.toLowerCase().includes(q)||p.rfc.toLowerCase().includes(q)).slice(0,20).map(p=>({
-      main:p.razon_social, sub:'RFC: '+p.rfc, val:p.razon_social, data:p
+    const localidad=selUnidad?.localidad||'';
+    let provPool=PROVEEDORES_CAT.filter(p=>matchAll||p.razon_social.toLowerCase().includes(q)||p.rfc.toLowerCase().includes(q));
+    if(localidad){
+      // Proveedores con zona que incluye la localidad primero, luego sin zona (statewide)
+      provPool.sort((a,b)=>{
+        const aOk=!a.zona||a.zona.includes(localidad);
+        const bOk=!b.zona||b.zona.includes(localidad);
+        return (aOk===bOk)?0:aOk?-1:1;
+      });
+    }
+    items=provPool.slice(0,20).map(p=>({
+      main:p.razon_social,
+      sub:'RFC: '+p.rfc+(p.zona&&localidad&&!p.zona.includes(localidad)?' · Fuera de zona':''),
+      val:p.razon_social, data:p
     }));
   } else if(tipo==='concepto'){
     const idx=parseInt(document.getElementById('acl-'+tipo)?.dataset?.idx||0);
@@ -1758,10 +1860,16 @@ function renderProveedores(lista){
   const cont=document.getElementById('lista-proveedores');
   if(!lista.length){cont.innerHTML='<div class="empty">No hay proveedores</div>';return;}
   cont.innerHTML=lista.slice(0,50).map(p=>`<div class="prov-row">
-    <div><div style="font-weight:500">${p.razon_social}</div><div style="font-size:11px;color:var(--sec)">${p.rfc||''}</div></div>
+    <div>
+      <div style="font-weight:500">${p.razon_social}${p.constancia_url?'<span style="background:var(--verde-l);color:var(--verde);font-size:9px;font-weight:600;padding:1px 6px;border-radius:4px;margin-left:6px;">CSF ✓</span>':''}</div>
+      <div style="font-size:11px;color:var(--sec)">${p.rfc||''}${p.zona?'<span style="color:var(--sec-l)"> · '+p.zona+'</span>':''}</div>
+    </div>
     <div style="font-size:11px">${p.rfc||'—'}</div>
     <div style="font-size:11px">${p.iva_rate?((p.iva_rate)*100).toFixed(0)+'%':'—'}</div>
-    <div>${isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 10px;" onclick="solicitarBajaProveedor('${p.razon_social}')">Dar de baja</button>`:'<span style="font-size:11px;color:var(--sec)">Activo</span>'}</div>
+    <div style="display:flex;gap:4px;flex-wrap:wrap;">
+      ${p.constancia_url?`<a href="${p.constancia_url}" target="_blank" class="btn btn-n" style="font-size:10px;padding:4px 8px;">CSF</a>`:''}
+      ${isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 8px;" onclick="solicitarBajaProveedor('${p.razon_social}')">Dar de baja</button>`:'<span style="font-size:11px;color:var(--sec)">Activo</span>'}
+    </div>
   </div>`).join('');
 }
 
@@ -1771,8 +1879,21 @@ async function solicitarProveedor(){
   const dom=document.getElementById('np-dom').value.trim();
   const iva=document.getElementById('np-iva').value;
   if(!nombre||!rfc){toast('Nombre y RFC son obligatorios',true);return;}
+  const zona=document.getElementById('np-zona')?.value||null;
+  // Subir CSF si se adjuntó
+  let csfUrl=null;
+  const csfFile=document.getElementById('np-csf')?.files?.[0];
+  if(csfFile){
+    const ext=csfFile.name.split('.').pop();
+    const fname=Date.now()+'_'+rfc.replace(/[^A-Z0-9]/gi,'_')+'.'+ext;
+    const {data:upData,error:upErr}=await sb.storage.from('constancias').upload(fname,csfFile,{upsert:true});
+    if(!upErr){
+      const {data:{publicUrl}}=sb.storage.from('constancias').getPublicUrl(fname);
+      csfUrl=publicUrl;
+    }
+  }
   const {error}=await sb.from('solicitudes_proveedores').insert([{
-    razon_social:nombre,rfc,domicilio:dom,iva_rate:parseFloat(iva),
+    razon_social:nombre,rfc,domicilio:dom,iva_rate:parseFloat(iva),zona,constancia_url:csfUrl,
     tipo:'alta',status:'pendiente',solicitado_por:currentUser.id,nombre_solicitante:userNombre
   }]);
   if(error){toast('Error: '+error.message,true);return;}
@@ -1921,7 +2042,7 @@ function exportCSV(tipo){
 }
 
 // ══ TABS ══
-const ALL_TABS=['nueva','mis-ordenes','proveedores','presupuesto','aprobaciones','usuarios'];
+const ALL_TABS=['nueva','mis-ordenes','proveedores','presupuesto','aprobaciones','usuarios','reportes'];
 function showTab(tab){
   // Si hay folio en proceso y cambian de tab, advertir
   if(tab!=='nueva'&&folioEnProceso){
@@ -1939,6 +2060,10 @@ function showTab(tab){
   if(tab==='usuarios'){cargarUsuarios();if(isAdmin)cargarSolicitudesUsr();}
   if(tab==='proveedores'){cargarProveedoresLista();if(isAdmin)cargarSolicitudesProv();}
   if(tab==='presupuesto'){cargarPresupuestos();}
+  if(tab==='reportes'){
+    if(!document.getElementById('rp-desde').value) setPeriodo('bimestre');
+    else cargarReportes();
+  }
 }
 
 
@@ -2640,6 +2765,137 @@ async function eliminarCatalogoConcepto(id){
   toast('Descripción eliminada del catálogo');
   catalogoConceptosDB=catalogoConceptosDB.filter(c=>c.id!==id);
   renderCatalogoConceptos();
+}
+
+
+// ══ MÓDULO DE REPORTES ══
+let _chartInstances={};
+
+function setPeriodo(tipo,btn){
+  document.querySelectorAll('.rp-preset').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  const hoy=new Date(),desde=new Date(hoy);
+  if(tipo==='semana') desde.setDate(hoy.getDate()-7);
+  else if(tipo==='mes') desde.setMonth(hoy.getMonth()-1);
+  else if(tipo==='bimestre') desde.setMonth(hoy.getMonth()-2);
+  else if(tipo==='trimestre') desde.setMonth(hoy.getMonth()-3);
+  else if(tipo==='anio') desde.setFullYear(hoy.getFullYear()-1);
+  document.getElementById('rp-desde').value=desde.toISOString().split('T')[0];
+  document.getElementById('rp-hasta').value=hoy.toISOString().split('T')[0];
+  cargarReportes();
+}
+
+async function cargarReportes(){
+  const desde=document.getElementById('rp-desde')?.value;
+  const hasta=document.getElementById('rp-hasta')?.value;
+  const partida=document.getElementById('rp-partida')?.value;
+  const status=document.getElementById('rp-status')?.value;
+
+  // Poblar select de partidas si está vacío
+  const selP=document.getElementById('rp-partida');
+  if(selP&&selP.options.length<=1){
+    PARTIDAS.forEach(p=>{
+      const o=document.createElement('option');
+      o.value=p.clave;o.textContent=p.clave+' — '+p.descripcion.substring(0,30);
+      selP.appendChild(o);
+    });
+  }
+
+  let query=sb.from('ordenes')
+    .select('id,folio,fecha_solicitud,partida,nombre_proveedor,unidad,total,status')
+    .neq('status','borrador');
+  if(desde) query=query.gte('fecha_solicitud',desde);
+  if(hasta) query=query.lte('fecha_solicitud',hasta);
+  if(partida) query=query.eq('partida',partida);
+  if(status) query=query.ilike('status','%'+status+'%');
+
+  const {data}=await query.limit(2000);
+  const ords=data||[];
+  renderRpKPIs(ords);
+  renderChart('chart-partidas','bar',agrupar(ords,'partida','total',8),'Monto','#059669');
+  renderChart('chart-proveedores','bar',agrupar(ords,'nombre_proveedor','total',6,20),'Monto','#2563eb');
+  renderChartEstados(ords);
+  renderChart('chart-unidades','bar',agrupar(ords,'unidad','total',8),'Monto','#047857');
+}
+
+function agrupar(ords,campo,val,top,truncLen){
+  const map={};
+  ords.forEach(o=>{if(o[campo])map[o[campo]]=(map[o[campo]]||0)+(o[val]||0);});
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,top)
+    .map(([k,v])=>({label:truncLen&&k.length>truncLen?k.substring(0,truncLen)+'…':k,value:v}));
+}
+
+function renderRpKPIs(ords){
+  const total=ords.length;
+  const apro=ords.filter(o=>o.status?.toLowerCase().includes('aprobado')).length;
+  const monto=ords.reduce((s,o)=>s+(o.total||0),0);
+  const prom=total>0?monto/total:0;
+  const el=document.getElementById('rp-kpis');
+  if(!el)return;
+  el.innerHTML=
+    '<div class="stat-card"><div class="stat-num">'+total+'</div><div class="stat-lbl">Órdenes en período</div></div>'+
+    '<div class="stat-card s-vd"><div class="stat-num">'+apro+'</div><div class="stat-lbl">Aprobadas</div></div>'+
+    '<div class="stat-card s-az"><div class="stat-num" style="font-size:18px">'+fmt(monto)+'</div><div class="stat-lbl">Monto total</div></div>'+
+    '<div class="stat-card"><div class="stat-num" style="font-size:18px">'+fmt(prom)+'</div><div class="stat-lbl">Promedio por orden</div></div>';
+}
+
+function renderChart(id,type,data,label,color){
+  if(_chartInstances[id]){_chartInstances[id].destroy();delete _chartInstances[id];}
+  const canvas=document.getElementById(id);
+  if(!canvas||typeof Chart==='undefined')return;
+  _chartInstances[id]=new Chart(canvas.getContext('2d'),{
+    type,
+    data:{
+      labels:data.map(d=>d.label),
+      datasets:[{label,data:data.map(d=>d.value),
+        backgroundColor:color,borderRadius:4,borderWidth:0}]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{y:{beginAtZero:true,ticks:{callback:v=>'$'+v.toLocaleString('es-MX',{maximumFractionDigits:0})}}}
+    }
+  });
+}
+
+function renderChartEstados(ords){
+  if(_chartInstances['chart-estados']){_chartInstances['chart-estados'].destroy();}
+  const canvas=document.getElementById('chart-estados');
+  if(!canvas||typeof Chart==='undefined')return;
+  const pend=ords.filter(o=>o.status?.toLowerCase().includes('pendiente')).length;
+  const apro=ords.filter(o=>o.status?.toLowerCase().includes('aprobado')).length;
+  const rech=ords.filter(o=>o.status?.toLowerCase().includes('rechazado')).length;
+  _chartInstances['chart-estados']=new Chart(canvas.getContext('2d'),{
+    type:'doughnut',
+    data:{
+      labels:['Pendiente','Aprobado','Rechazado'],
+      datasets:[{data:[pend,apro,rech],
+        backgroundColor:['#d97706','#059669','#dc2626'],
+        borderWidth:2,borderColor:'#fff'}]
+    },
+    options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}
+  });
+}
+
+function exportarReporteCSV(){
+  const desde=document.getElementById('rp-desde')?.value||'';
+  const hasta=document.getElementById('rp-hasta')?.value||'';
+  // Reusar la función exportCSV existente con filtro de fechas
+  sb.from('ordenes').select('folio,fecha_solicitud,unidad,nombre_proveedor,partida,total,status')
+    .neq('status','borrador')
+    .gte('fecha_solicitud',desde||'2020-01-01')
+    .lte('fecha_solicitud',hasta||'2099-12-31')
+    .limit(5000)
+    .then(({data})=>{
+      if(!data||!data.length){toast('Sin datos para exportar',true);return;}
+      const cols=['folio','fecha_solicitud','unidad','nombre_proveedor','partida','total','status'];
+      var _nl=String.fromCharCode(10);var csv=[cols.join(',')].concat(data.map(r=>cols.map(c=>'"'+(r[c]||'').toString().replace(/"/g,'""')+'"').join(','))).join(_nl)
+      const a=document.createElement('a');
+      a.href='data:text/csv;charset=utf-8,﻿'+encodeURIComponent(csv);
+      a.download='reporte_ordenes_'+desde+'_'+hasta+'.csv';
+      a.click();
+      toast('CSV exportado');
+    });
 }
 
 // ══ COLA RAPIDA ══
