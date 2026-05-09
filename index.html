@@ -598,7 +598,7 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
             </div>
             <div class="firma-box">
               <div class="firma-linea"></div>
-              <div class="firma-nombre">_____________________</div>
+              <div class="firma-nombre" id="firma-prov-nombre" style="font-size:11px;min-height:16px;">Proveedor</div>
               <div class="firma-cargo">Nombre y Firma<br>Prestador del Servicio</div>
             </div>
           </div>
@@ -1201,6 +1201,7 @@ async function acBuscarFolio(val){
     .select('id,folio,fecha_solicitud,nombre_proveedor,unidad,status')
     .order('folio',{ascending:false})
     .limit(40);
+  if(!isAdmin) query=query.eq('created_by',currentUser.id);
   if(q) query=query.ilike('folio','%'+q+'%');
   const {data,error}=await query;
   if(error){
@@ -1261,13 +1262,13 @@ function calcTiempo(){
 function renderConceptos() {
   const tb=document.getElementById('conceptos-tbody');tb.innerHTML='';
   const pClave=selPartida?.clave||'';
-  const pool=CONCEPTOS_MAP[pClave]||[];
+  const hasPool=(CONCEPTOS_MAP[pClave]||[]).length>0||catalogoConceptosDB.filter(c=>c.partida_clave===pClave).length>0;
   conceptos.forEach((c,i)=>{
     const tr=document.createElement('tr');
     tr.innerHTML=`<td class="nc">${i+1}</td>
       <td>
         <div class="ac-wrap">
-          <input class="ac-input" id="ac-concepto-${i}" value="${c.desc}" placeholder="${pool.length?'Buscar concepto...':'Descripción libre...'}"
+          <input class="ac-input" id="ac-concepto-${i}" value="${c.desc}" placeholder="${hasPool?'Buscar concepto...':'Descripción libre (sin partida seleccionada)'}"
             onclick="acSearchConcepto(${i},this.value||'')" onfocus="acSearchConcepto(${i},this.value||'')" oninput="acSearchConcepto(${i},this.value)"
             onchange="conceptos[${i}].desc=this.value"
             autocomplete="off" style="min-width:240px">
@@ -1280,7 +1281,7 @@ function renderConceptos() {
         onchange="setCantEnt(${i},+this.value)" style="text-align:center;width:60px;padding:6px 4px"></td>
       <td style="width:90px"><input type="number" value="${c.pu||''}" min="0" step="0.01" placeholder="0.00"
         onchange="conceptos[${i}].pu=+this.value;calcImp(${i})" style="text-align:right;width:85px;padding:6px 4px"></td>
-      <td style="text-align:center"><span class="r5-dot ${c.ret5?'on':''}" id="r5-${i}" title="${c.ret5?'Aplica ret. 5/1000':'No aplica ret. 5/1000'}"></span></td>
+      <td style="text-align:center;cursor:pointer" onclick="toggleR5(${i})"><span class="r5-dot ${c.ret5?'on':''}" id="r5-${i}" title="${c.ret5?'Aplica ret. 5/1000':'No aplica ret. 5/1000'}"></span></td>></span></td>
       <td class="ic" id="imp-${i}">${fmt(c.imp)}</td>`;
     tb.appendChild(tr);
   });
@@ -1544,7 +1545,10 @@ async function abrirOrden(id,puedeAprobar){
   if(!o)return;
   const ap=o.status?.toLowerCase().includes('aprobado');
   const re=o.status?.toLowerCase().includes('rechazado');
-  document.getElementById('mhdr').style.background=ap?'#155724':re?'var(--guinda)':'var(--verde)';
+  const mhdrEl=document.getElementById('mhdr');
+  mhdrEl.style.background=ap?'#f0fdf4':re?'var(--guinda-l)':'var(--verde-l)';
+  mhdrEl.style.color=ap?'var(--verde-hover)':re?'var(--guinda)':'var(--verde-hover)';
+  mhdrEl.style.borderBottom=ap?'1px solid var(--verde-m)':re?'1px solid var(--guinda)':'1px solid var(--verde-m)';
   document.getElementById('mtitulo').textContent='Orden '+o.folio+' — '+(ap?'Aprobada':re?'Rechazada':'Pendiente');
   document.getElementById('mbody').innerHTML=`
     <div class="det-grid">
@@ -1609,7 +1613,7 @@ async function confirmarEliminar(id, folio){
   cargarMisOrdenes();
   if(isAdmin)cargarTodasOrdenes();
 }
-function cerrarModal(){document.getElementById('modal-orden').classList.remove('open');}
+function cerrarModal(){document.getElementById('modal-orden').classList.remove('open');const h=document.getElementById('mhdr');if(h){h.style.background='';h.style.color='';h.style.borderBottom='';}}
 
 // ══ PROVEEDORES ══
 async function cargarProveedoresLista(){
@@ -2211,6 +2215,17 @@ function fmtPesos(n){
   return '$'+(n||0).toLocaleString('es-MX',{minimumFractionDigits:0,maximumFractionDigits:0});
 }
 
+
+// ══ R5 TOGGLE ══
+function toggleR5(idx){
+  conceptos[idx].ret5=!conceptos[idx].ret5;
+  const dot=document.getElementById('r5-'+idx);
+  if(dot){
+    dot.className='r5-dot'+(conceptos[idx].ret5?' on':'');
+    dot.title=conceptos[idx].ret5?'Aplica ret. 5/1000':'No aplica ret. 5/1000';
+  }
+  calcTotales();
+}
 
 // ══ CATÁLOGO DE CONCEPTOS (DB) ══
 
