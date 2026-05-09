@@ -235,7 +235,7 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
 .field-err input,.field-err select,.field-err .ac-input{border-color:var(--guinda)!important;box-shadow:0 0 0 3px var(--guinda-l)!important;}
 .err-msg{font-size:11px;color:var(--guinda);margin-top:3px;font-weight:500;}
 
-.pres-row{display:grid;grid-template-columns:1fr 110px 110px 110px 90px;gap:10px;padding:12px 16px;background:var(--surface);border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:6px;align-items:center;font-size:13px;transition:all 0.15s;}
+.pres-row{padding:12px 14px;background:var(--surface);border-radius:var(--radio);border:1px solid var(--borde);margin-bottom:6px;align-items:center;font-size:13px;transition:all 0.15s;}
 .pres-row:hover{border-color:var(--verde);box-shadow:0 4px 12px rgba(0,0,0,0.06);}
 .pres-disponible{font-family:monospace;font-weight:600;font-size:13px;}
 .pres-ok{color:var(--verde);}
@@ -631,6 +631,7 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
           <input type="text" id="mf-prov" placeholder="Proveedor..." oninput="filtrarMis()">
           <select id="mf-status" onchange="filtrarMis()">
             <option value="">Todos los estados</option>
+            <option value="borrador">Borrador</option>
             <option value="pendiente">Pendiente</option>
             <option value="aprobado">Aprobado</option>
             <option value="rechazado">Rechazado</option>
@@ -1497,7 +1498,7 @@ async function guardarOrden(targetStatus='pendiente'){
     if(!od){toast('Error: no se recibió confirmación de Supabase',true);btn.innerHTML='Guardar Orden';btn.disabled=false;return;}
     const cds=conceptos.filter(c=>c.desc.trim()).map(c=>({orden_id:od.id,consecutivo:c.num,descripcion:c.desc,cantidad_solicitada:c.cantSol,cantidad_entregada:c.cantEnt,precio_unitario:c.pu,importe:c.imp}));
     if(cds.length)await sb.from('conceptos').insert(cds);
-    folioEnProceso=false;
+    folioEnProceso=false;editandoOrdenId=null;
     toast(targetStatus==='borrador'?'✓ Borrador guardado — puedes completarlo y enviarlo después':'✓ Orden '+folioActual+' enviada a aprobación');
     btn.innerHTML='Guardar Orden';btn.disabled=false;
     cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();cargarPresupuestos();
@@ -1519,7 +1520,7 @@ async function cargarMisOrdenes(){
     return;
   }
   misOrdenes=data||[];
-  document.getElementById('badge-mis').textContent=misOrdenes.length;
+  document.getElementById('badge-mis').textContent=misOrdenes.filter(o=>o.status!=='borrador').length;
   // Actualizar hero stats
   const _ht=document.getElementById('hero-total');
   const _hp=document.getElementById('hero-pendientes');
@@ -1537,7 +1538,7 @@ function filtrarMis(){
   renderLista(misOrdenes.filter(o=>{
     if(fo&&!o.folio?.toLowerCase().includes(fo))return false;
     if(pr&&!o.nombre_proveedor?.toLowerCase().includes(pr))return false;
-    if(st&&!o.status?.toLowerCase().includes(st==='pendiente'?'pendiente':st))return false;
+    if(st&&(st==='borrador'?o.status!=='borrador':!o.status?.toLowerCase().includes(st==='pendiente'?'pendiente':st)))return false;
     return true;
   }),'lista-mis',false);
 }
@@ -2314,7 +2315,7 @@ async function enviarBorrador(id){
     .eq('id',id).eq('created_by',currentUser.id).eq('status','borrador');
   if(error){toast('Error: '+error.message,true);return;}
   toast('✓ Orden enviada a aprobación');
-  cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();
+  cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();cargarPresupuestos();
 }
 
 // ══ CORREGIR ORDEN RECHAZADA ══
@@ -2326,7 +2327,8 @@ async function corregirOrden(id){
 
   // Verificar que es del usuario actual y está rechazada
   if(o.created_by!==currentUser.id){toast('Solo puedes corregir tus propias órdenes',true);return;}
-  if(!o.status?.toLowerCase().includes('rechazado')){toast('Solo puedes corregir órdenes rechazadas',true);return;}
+  const esBorrador = o.status==='borrador';
+  if(!o.status?.toLowerCase().includes('rechazado')&&!esBorrador){toast('Solo puedes editar órdenes rechazadas o borradores propios',true);return;}
 
   editandoOrdenId=id;
   folioActual=o.folio;
@@ -2351,7 +2353,7 @@ async function corregirOrden(id){
   }
   // Cambiar label del botón guardar
   const btnG=document.getElementById('btn-guardar');
-  if(btnG)btnG.innerHTML='Corregir y reenviar';
+  if(btnG)btnG.innerHTML=esBorrador?'Guardar y enviar ›':'Corregir y reenviar';
 
   // Reconstruir objetos sel* desde catálogos estáticos + datos de la orden
   selUnidad=UNIDADES.find(u=>u.unidad===o.unidad)||{unidad:o.unidad,ui:(o.clave_unidad||'').split('-')[0],cc:(o.clave_unidad||'').split('-')[1],jcu:o.jcu};
