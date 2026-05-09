@@ -263,6 +263,21 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
 .step-title{font-size:13px;font-weight:600;color:var(--texto);}
 .step-sub{font-size:11px;color:var(--sec);margin-top:2px;}
 
+/* ═══ FASE 4 — STATUS ACCENT + PROGRESS BARS ═══ */
+
+/* Status accent: borde izquierdo de color según estado en filas .lr */
+.lr-pend{border-left:3px solid var(--warn)!important;padding-left:12px!important;}
+.lr-apro{border-left:3px solid var(--verde)!important;padding-left:12px!important;}
+.lr-rech{border-left:3px solid var(--guinda)!important;padding-left:12px!important;}
+
+/* Progress bar — presupuesto */
+.pres-bar{height:6px;background:var(--borde);border-radius:3px;margin-top:7px;overflow:hidden;}
+.pres-bar-fill{height:100%;border-radius:3px;transition:width 0.5s ease;}
+.pres-bar-ok   {background:var(--verde);}
+.pres-bar-warn {background:#f0a500;}
+.pres-bar-full {background:var(--guinda);}
+.pres-pct{font-size:10px;color:var(--sec);margin-top:3px;font-variant-numeric:tabular-nums;}
+
 @media(max-width:700px){
   .g2,.g3,.g4{grid-template-columns:1fr;}
   .c2,.c3,.c4{grid-column:span 1;}
@@ -792,7 +807,13 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
       </div>
 
       <div class="section">
-        <div class="sh sh-v">Presupuesto disponible por partida</div>
+        <div class="sh-step">
+          <div class="step-circle" style="background:var(--azul);box-shadow:0 2px 6px rgba(37,99,235,0.3);">$</div>
+          <div class="step-info">
+            <div class="step-title">Presupuesto disponible por partida</div>
+            <div class="step-sub">Monto asignado, consumido y disponible con barra de progreso</div>
+          </div>
+        </div>
         <div class="sb">
           <div style="margin-bottom:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <input type="text" id="pres-filtro" placeholder="Filtrar por partida..." oninput="filtrarPresupuesto()" style="font-size:12px;padding:8px 10px;border:1.5px solid var(--borde);border-radius:var(--radio);background:var(--gris);outline:none;width:260px;">
@@ -810,7 +831,13 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
       </div>
 
       <div class="section">
-        <div class="sh sh-v">Historial de asignaciones</div>
+        <div class="sh-step">
+          <div class="step-circle" style="background:var(--sec);box-shadow:none;">≡</div>
+          <div class="step-info">
+            <div class="step-title">Historial de asignaciones</div>
+            <div class="step-sub">Haz clic en una partida para ver sus movimientos</div>
+          </div>
+        </div>
         <div class="sb">
           <div id="historial-presupuestos"><div class="empty">Haz clic en una partida para ver su historial</div></div>
         </div>
@@ -1377,7 +1404,8 @@ function renderLista(ordenes,cid,adm){
         <button class="btn btn-n" style="font-size:10px;padding:5px 9px;" onclick="abrirOrden('${o.id}',false)">Ver</button>
         ${puedeEliminar?`<button class="btn btn-r" style="font-size:10px;padding:5px 9px;" onclick="confirmarEliminar('${o.id}','${o.folio}')">Eliminar</button>`:''}
        </div>`;
-    return `<div class="lr"><div class="ft">${o.folio||'—'}</div><div style="font-size:11px;color:var(--sec)">${fecha}</div><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.nombre_proveedor||'—'}</div>${col4}<div style="font-family:monospace;font-size:12px;color:var(--verde)">${fmt(o.total)}</div><div>${badge}</div><div>${accion}</div></div>`;
+    const lrcls=ap?'lr lr-apro':re?'lr lr-rech':'lr lr-pend';
+    return `<div class="${lrcls}"><div class="ft">${o.folio||'—'}</div><div style="font-size:11px;color:var(--sec)">${fecha}</div><div style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.nombre_proveedor||'—'}</div>${col4}<div style="font-family:monospace;font-size:12px;color:var(--verde)">${fmt(o.total)}</div><div>${badge}</div><div>${accion}</div></div>`;
   }).join('');
 }
 
@@ -2002,13 +2030,13 @@ function renderPresupuestos(lista){
     const pct=p.monto>0?(p.consumido/p.monto)*100:0;
     const cls=p.disponible<=0?'pres-agotado':pct>80?'pres-bajo':'pres-ok';
     const deleteBtn=isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 8px;" onclick="verHistorial('${p.partida}')">Historial</button>`:'<span style="font-size:11px;color:var(--sec)">Ver</span>';
+    const barCls=p.disponible<=0?'pres-bar-full':pct>80?'pres-bar-warn':'pres-bar-ok';
     return `<div class="pres-row" onclick="verHistorial('${p.partida}')" style="cursor:pointer;">
       <div>
         <div style="font-weight:600;font-size:12px">${p.partida}</div>
         <div style="font-size:10px;color:var(--sec)">${(p.descripcion_partida||'').substring(0,50)}</div>
-        <div style="margin-top:4px;height:4px;background:var(--gris);border-radius:2px;">
-          <div style="height:4px;border-radius:2px;background:${p.disponible<=0?'var(--guinda)':pct>80?'#f0a500':'var(--verde)'};width:${Math.min(100,pct).toFixed(0)}%"></div>
-        </div>
+        <div class="pres-bar"><div class="pres-bar-fill ${barCls}" style="width:${Math.min(100,pct).toFixed(0)}%"></div></div>
+        <div class="pres-pct">${pct.toFixed(0)}% utilizado</div>
       </div>
       <div class="pres-disponible" style="text-align:right">${fmtPesos(p.monto)}</div>
       <div class="pres-disponible pres-agotado" style="text-align:right">${fmtPesos(p.consumido)}</div>
