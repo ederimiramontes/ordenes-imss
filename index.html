@@ -961,13 +961,14 @@ const CONCEPTOS_MAP = {"_51351003": [{"texto": "SERVICIO DE TAPICERÍA", "ret5":
 
 let currentUser = null, isAdmin = false, userNombre = '';
 let folioActual = '';
+let folioEnProceso = false; // true mientras hay folio generado sin guardar
 let conceptos = mkC();
 let misOrdenes = [], todasOrdenes = [], proveedoresList = [];
 let selUnidad = null, selElaboro = '', selPartida = null, selProv = null;
 let catalogoConceptosDB = [];           // DB catalog — cargado al inicio
 let ccFiltroText = '', ccFiltroPartida = '';  // estado filtros catálogo
 
-function mkC() { return Array(5).fill(null).map((_,i)=>({num:i+1,desc:'',cantSol:0,cantEnt:0,pu:0,imp:0,ret5:false})); }
+function mkC() { return Array(10).fill(null).map((_,i)=>({num:i+1,desc:'',cantSol:0,cantEnt:0,pu:0,imp:0,ret5:false})); }
 
 // ══ AUTH ══
 async function doLogin() {
@@ -1169,6 +1170,7 @@ async function iniciarNuevoFolio(){
     return;
   }
   document.getElementById('folio-display').textContent=folioActual;
+  folioEnProceso=true;
   selUnidad=null;selPartida=null;selProv=null;
   ['ac-unidad','ac-partida','ac-prov','especialidad','subespecialidad','destino',
    'f-ini','f-ter','f-depto','f-segade','jefe-depto','matricula',
@@ -1187,6 +1189,7 @@ async function iniciarNuevoFolio(){
 }
 
 function volverMenu(){
+  folioEnProceso=false;
   document.getElementById('form-orden').style.display='none';
   document.getElementById('menu-gestion').style.display='block';
   document.getElementById('ac-buscar-folio').value='';
@@ -1335,7 +1338,7 @@ function selectConcepto(rowIdx, itemIdx) {
   listEl.classList.remove('open');
   conceptos[rowIdx].desc=desc;
   conceptos[rowIdx].ret5=item.ret5||false;
-  if(item.precio) conceptos[rowIdx].pu=item.precio;
+  if(item.precio!=null) conceptos[rowIdx].pu=item.precio;
   // Actualizar dot R5
   const dot=document.getElementById('r5-'+rowIdx);
   if(dot) dot.className='r5-dot'+(item.ret5?' on':'');
@@ -1397,6 +1400,18 @@ async function guardarOrden(){
   if(!selPartida){toast('Selecciona una Partida',true);return;}
   if(!document.getElementById('sel-iva').value){toast('Selecciona la tasa de IVA',true);return;}
   if(!conceptos.some(c=>c.desc.trim())){toast('Agrega al menos un concepto',true);return;}
+  const _csub=conceptos.reduce((s,c)=>s+(c.imp||0),0);
+  if(_csub<=0){toast('El importe total debe ser mayor a $0',true);return;}
+  // Verificar presupuesto disponible (advertencia, no bloqueo)
+  if(selPartida&&presupuestosData&&presupuestosData.length){
+    const _pr=presupuestosData.find(p=>p.partida===selPartida.clave);
+    if(_pr&&_pr.disponible!=null){
+      const _tot=_csub*(1+(parseFloat(document.getElementById('sel-iva').value)||0))-(selProv?.ret_isr?_csub*0.01:0);
+      if(_pr.disponible<_tot){
+        if(!confirm('⚠ Presupuesto insuficiente para '+selPartida.clave+'.\nDisponible: $'+_pr.disponible.toLocaleString('es-MX')+'\nTotal orden: $'+_tot.toLocaleString('es-MX')+'\n\n¿Guardar de todas formas?')){return;}
+      }
+    }
+  }
   const btn=document.getElementById('btn-guardar');
   btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
   const sub=conceptos.reduce((s,c)=>s+(c.imp||0),0);
@@ -1439,9 +1454,10 @@ async function guardarOrden(){
   if(!od){toast('Error: no se recibió confirmación de Supabase',true);btn.innerHTML='Guardar Orden';btn.disabled=false;return;}
   const cds=conceptos.filter(c=>c.desc.trim()).map(c=>({orden_id:od.id,consecutivo:c.num,descripcion:c.desc,cantidad_solicitada:c.cantSol,cantidad_entregada:c.cantEnt,precio_unitario:c.pu,importe:c.imp}));
   if(cds.length)await sb.from('conceptos').insert(cds);
+  folioEnProceso=false;
   toast('✓ Orden '+folioActual+' guardada');
   btn.innerHTML='Guardar Orden';btn.disabled=false;
-  cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();
+  cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();cargarPresupuestos();
   setTimeout(()=>nuevaOrden(),1500);
 }
 
@@ -1468,6 +1484,7 @@ async function cargarMisOrdenes(){
   if(_hp)_hp.textContent=misOrdenes.filter(o=>o.status?.toLowerCase().includes('pendiente')).length;
   if(_ha)_ha.textContent=misOrdenes.filter(o=>o.status?.toLowerCase().includes('aprobado')).length;
   renderLista(misOrdenes,'lista-mis',false);
+  filtrarMis(); // re-aplica filtros activos
 }
 function filtrarMis(){
   const fo=document.getElementById('mf-folio').value.toLowerCase();
@@ -1586,22 +1603,31 @@ async function abrirOrden(id,puedeAprobar){
       <button class="btn" style="background:#c0392b;color:white;" onclick="generarPDF('${id}')">⬇ PDF</button>`;
   } else {
     footer.innerHTML=`<button class="btn btn-n" onclick="cerrarModal()">Cerrar</button>
-      ${isAdmin?`<button class="btn btn-a" onclick="eliminarOrden('${id}')">Eliminar</button>`:''}
+      ${isAdmin&&!ap&&!re?`<button class="btn btn-a" onclick="eliminarOrden('${id}')">Eliminar</button>`:''}
       <button class="btn" style="background:#c0392b;color:white;" onclick="generarPDF('${id}')">⬇ PDF</button>`;
   }
   document.getElementById('modal-orden').classList.add('open');
 }
 async function cambiarStatus(id,status){
   const comentario=document.getElementById('modal-coment')?.value||'';
-  await sb.from('ordenes').update({status,comentario_aprobacion:comentario}).eq('id',id);
+  // Comentario requerido al rechazar
+  if(status==='Rechazado'&&!comentario.trim()){toast('Escribe un motivo de rechazo antes de continuar',true);return;}
+  // Guard: verificar que la orden no esté ya decidida
+  const {data:curr}=await sb.from('ordenes').select('status').eq('id',id).single();
+  const ya=curr?.status?.toLowerCase();
+  if(ya&&(ya.includes('aprobado')||ya.includes('rechazado'))){
+    toast('Esta orden ya fue '+curr.status+'. No se puede cambiar.',true);cerrarModal();return;
+  }
+  const {error}=await sb.from('ordenes').update({status,comentario_aprobacion:comentario}).eq('id',id);
+  if(error){toast('Error: '+error.message,true);return;}
   toast(status==='Aprobado'?'✓ Orden aprobada':'Orden rechazada',status!=='Aprobado');
-  cerrarModal();cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();
+  cerrarModal();cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();cargarPresupuestos();
 }
 async function eliminarOrden(id){
   if(!confirm('¿Eliminar esta orden? No se puede deshacer.'))return;
   await sb.from('conceptos').delete().eq('orden_id',id);
   await sb.from('ordenes').delete().eq('id',id);
-  toast('Orden eliminada');cerrarModal();cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();
+  toast('Orden eliminada');cerrarModal();cargarMisOrdenes();if(isAdmin)cargarTodasOrdenes();cargarPresupuestos();
 }
 
 async function confirmarEliminar(id, folio){
@@ -1612,6 +1638,7 @@ async function confirmarEliminar(id, folio){
   toast('Orden '+folio+' eliminada');
   cargarMisOrdenes();
   if(isAdmin)cargarTodasOrdenes();
+  cargarPresupuestos();
 }
 function cerrarModal(){document.getElementById('modal-orden').classList.remove('open');const h=document.getElementById('mhdr');if(h){h.style.background='';h.style.color='';h.style.borderBottom='';}}
 
@@ -1801,6 +1828,13 @@ function exportCSV(tipo){
 // ══ TABS ══
 const ALL_TABS=['nueva','mis-ordenes','proveedores','presupuesto','aprobaciones','usuarios'];
 function showTab(tab){
+  // Si hay folio en proceso y cambian de tab, advertir
+  if(tab!=='nueva'&&folioEnProceso){
+    if(!confirm('Hay un folio en proceso ('+folioActual+') sin guardar.\n¿Salir de todos modos?\nEl folio quedará reservado sin orden.'))return;
+    folioEnProceso=false;volverMenu();
+  }
+  // Si vuelven a la tab Gestionar estando en el formulario, regresar al menú
+  if(tab==='nueva'){const _f=document.getElementById('form-orden');if(_f&&_f.style.display!=='none')volverMenu();}
   ALL_TABS.forEach(t=>{
     const c=document.getElementById('content-'+t);
     const tb=document.getElementById('tab-'+t);
