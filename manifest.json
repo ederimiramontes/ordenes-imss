@@ -1,0 +1,22 @@
+{
+  "name": "Sistema de Gestión de Órdenes — Conservación BC",
+  "short_name": "Órdenes BC",
+  "description": "Sistema interno de gestión de órdenes de servicio. Delegación Baja California.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f9fafb",
+  "theme_color": "#059669",
+  "lang": "es-MX",
+  "icons": [
+    {
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "prefer_related_applications": false
+}

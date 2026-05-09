@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#059669"/>
+  <rect width="512" height="512" rx="96" fill="url(#g)"/>
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#059669"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+  </defs>
+  <text x="256" y="310" font-family="system-ui,-apple-system,sans-serif"
+    font-size="220" font-weight="700" fill="white"
+    text-anchor="middle" letter-spacing="-8">SO</text>
+  <rect x="96" y="348" width="320" height="6" rx="3" fill="rgba(255,255,255,0.3)"/>
+</svg>
