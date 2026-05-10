@@ -861,6 +861,7 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
           <div class="g3">
             <div class="field"><label>Nombre completo <span class="req">*</span></label><input type="text" id="su-nombre" placeholder="ING. NOMBRE APELLIDO"></div>
             <div class="field"><label>Correo electrónico <span class="req">*</span></label><input type="email" id="su-email" placeholder="correo@dominio.com"></div>
+            <div class="field"><label>Email para notificaciones</label><input type="email" id="su-email-notif" placeholder="Dónde recibir alertas (puede ser igual al de arriba)"></div>
             <div class="field"><label>Rol solicitado</label>
               <select id="su-rol"><option value="Usuario">Usuario</option><option value="Admin">Administrador</option></select>
             </div>
@@ -888,6 +889,7 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
               <div class="field"><label>Nombre completo <span class="req">*</span></label><input type="text" id="nu-nombre" placeholder="ING. NOMBRE APELLIDO" disabled></div>
               <div class="field"><label>Correo electrónico <span class="req">*</span></label><input type="email" id="nu-email" placeholder="correo@dominio.com" disabled></div>
               <div class="field"><label>Contraseña temporal <span class="req">*</span></label><input type="password" id="nu-pass" placeholder="Mínimo 6 caracteres" disabled></div>
+              <div class="field"><label>Email para notificaciones</label><input type="email" id="nu-email-notif" placeholder="correo@dominio.com" disabled></div>
               <div class="field"><label>Rol</label>
                 <select id="nu-rol" disabled><option value="Usuario">Usuario</option><option value="Admin">Administrador</option></select>
               </div>
@@ -1944,6 +1946,7 @@ async function rechazarProv(id){
 async function solicitarUsuario(){
   const nombre=document.getElementById('su-nombre').value.trim();
   const email=document.getElementById('su-email').value.trim();
+  const emailNotif=document.getElementById('su-email-notif').value.trim()||null;
   const rol=document.getElementById('su-rol').value;
   if(!nombre||!email){toast('Nombre y correo son obligatorios',true);return;}
   const btn=document.getElementById('btn-sol-usr');
@@ -1951,13 +1954,14 @@ async function solicitarUsuario(){
   const {error}=await sb.from('solicitudes_usuarios').insert([{
     nombre_completo:nombre,email,rol,
     solicitado_por:currentUser.id,nombre_solicitante:userNombre,
-    status:'pendiente'
+    status:'pendiente',email_notificacion:emailNotif
   }]);
   if(error){toast('Error: '+error.message,true);btn.innerHTML='Enviar Solicitud';btn.disabled=false;return;}
   toast('✓ Solicitud enviada — el administrador la revisará');
   btn.innerHTML='Enviar Solicitud';btn.disabled=false;
   document.getElementById('su-nombre').value='';
   document.getElementById('su-email').value='';
+  document.getElementById('su-email-notif').value='';
 }
 
 async function cargarSolicitudesUsr(){
@@ -2001,16 +2005,17 @@ async function crearUsuario(){
   const email=document.getElementById('nu-email').value.trim();
   const pass=document.getElementById('nu-pass').value;
   const rol=document.getElementById('nu-rol').value;
+  const emailNotif=document.getElementById('nu-email-notif').value.trim()||null;
   if(!nombre||!email||!pass){toast('Llena todos los campos',true);return;}
   if(pass.length<6){toast('Contraseña mínimo 6 caracteres',true);return;}
   const btn=document.getElementById('btn-crear-usr');
   btn.innerHTML='<span class="spinner"></span>Creando...';btn.disabled=true;
   const {data,error}=await sb.auth.admin.createUser({email,password:pass,email_confirm:true});
   if(error){toast('Error: '+error.message,true);btn.innerHTML='Crear Usuario';btn.disabled=false;return;}
-  await sb.from('perfiles').insert([{id:data.user.id,nombre_completo:nombre,tipo:rol,activo:true}]);
+  await sb.from('perfiles').insert([{id:data.user.id,nombre_completo:nombre,tipo:rol,activo:true,email_notificacion:emailNotif}]);
   toast('✓ Usuario '+nombre+' creado');
   btn.innerHTML='Crear Usuario';btn.disabled=false;
-  ['nu-nombre','nu-email','nu-pass'].forEach(id=>document.getElementById(id).value='');
+  ['nu-nombre','nu-email','nu-pass','nu-email-notif'].forEach(id=>document.getElementById(id).value='');
   cargarUsuarios();
 }
 async function cargarUsuarios(){
