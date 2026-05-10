@@ -716,13 +716,42 @@ body{font-family:'Inter',-apple-system,system-ui,sans-serif;background:var(--gri
         </div>
       </div>
 
-      <!-- Solo admin: solicitudes pendientes -->
-      <div class="section" id="sec-sol-prov" style="display:none;">
-        <div class="sh sh-g">Solicitudes pendientes de aprobación</div>
-        <div class="sb">
-          <div class="prov-row prov-hdr"><div>Razón Social</div><div>RFC</div><div>Solicitado por</div><div>Acción</div></div>
-          <div id="lista-sol-prov"></div>
+      <!-- Solo admin: agregar directo + solicitudes pendientes -->
+      <div id="sec-admin-prov" style="display:none;">
+
+        <!-- Agregar proveedor directo (admin) -->
+        <div class="section">
+          <div class="sh sh-g">Agregar proveedor directo</div>
+          <div class="sb">
+            <div class="g3">
+              <div class="field"><label>Razón Social <span class="req">*</span></label><input type="text" id="adm-np-nombre" placeholder="Nombre o razón social completa" style="text-transform:uppercase"></div>
+              <div class="field"><label>RFC <span class="req">*</span></label><input type="text" id="adm-np-rfc" placeholder="XXXX000000XXX" maxlength="13" oninput="this.value=this.value.toUpperCase()"></div>
+              <div class="field"><label>Tasa IVA</label><select id="adm-np-iva"><option value="0.08">8%</option><option value="0.16">16%</option></select></div>
+              <div class="field c2"><label>Domicilio</label><input type="text" id="adm-np-dom" placeholder="Calle, número, colonia, ciudad, CP"></div>
+              <div class="field"><label>Zona de operación</label><select id="adm-np-zona"><option value="">Todo Baja California</option><option value="M">Solo Mexicali</option><option value="T">Solo Tijuana</option><option value="E">Solo Ensenada</option><option value="M,T">Mexicali y Tijuana</option><option value="M,E">Mexicali y Ensenada</option><option value="T,E">Tijuana y Ensenada</option></select></div>
+              <div class="field"><label>Constancia Fiscal (PDF/JPG/PNG, máx 5MB)</label><input type="file" id="adm-np-csf" accept=".pdf,.jpg,.jpeg,.png"></div>
+              <div class="field c3" style="flex-direction:row;align-items:flex-end;justify-content:flex-end;">
+                <button class="btn btn-g" onclick="agregarProveedorDirecto()" id="btn-adm-np">+ Agregar al Catálogo</button>
+              </div>
+            </div>
+          </div>
         </div>
+
+        <!-- Solicitudes pendientes -->
+        <div class="section" id="sec-sol-prov">
+          <div class="sh sh-g">Solicitudes pendientes de aprobación</div>
+          <div class="sb">
+            <div class="prov-row prov-hdr"><div>Razón Social</div><div>RFC</div><div>Solicitado por</div><div>Acción</div></div>
+            <div id="lista-sol-prov"></div>
+          </div>
+        </div>
+
+        <!-- Proveedores dados de baja (reactivar) -->
+        <div class="section" id="sec-prov-baja" style="display:none;">
+          <div class="sh sh-g">Proveedores dados de baja</div>
+          <div class="sb"><div id="lista-prov-baja"></div></div>
+        </div>
+
       </div>
 
       <!-- CATÁLOGO DE DESCRIPCIONES DE SERVICIO -->
@@ -1172,7 +1201,7 @@ async function mostrarApp() {
     tRp.textContent='Reportes';tRp.onclick=()=>showTab('reportes');tabs.appendChild(tRp);
     const t2=document.createElement('div');t2.className='tab atab';t2.id='tab-usuarios';
     t2.textContent='Usuarios';t2.onclick=()=>showTab('usuarios');tabs.appendChild(t2);
-    document.getElementById('sec-sol-prov').style.display='block';
+    document.getElementById('sec-admin-prov').style.display='block';
     const secCap=document.getElementById('sec-captura-presupuesto2');if(secCap)secCap.style.display='block';
   }
   await initForm();
@@ -1870,7 +1899,7 @@ function renderProveedores(lista){
     <div style="font-size:11px">${p.iva_rate?((p.iva_rate)*100).toFixed(0)+'%':'—'}</div>
     <div style="display:flex;gap:4px;flex-wrap:wrap;">
       ${p.constancia_url?`<a href="${p.constancia_url}" target="_blank" class="btn btn-n" style="font-size:10px;padding:4px 8px;">CSF</a>`:''}
-      ${isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 8px;" onclick="solicitarBajaProveedor('${p.razon_social}')">Dar de baja</button>`:'<span style="font-size:11px;color:var(--sec)">Activo</span>'}
+      ${isAdmin?`<button class="btn btn-n" style="font-size:10px;padding:4px 8px;" onclick="editarProveedor('${p.id}')">✏️ Editar</button><button class="btn btn-r" style="font-size:10px;padding:4px 8px;" onclick="solicitarBajaProveedor('${p.razon_social}')">Dar de baja</button>`:'<span style="font-size:11px;color:var(--sec)">Activo</span>'}
     </div>
   </div>`).join('');
 }
@@ -1912,34 +1941,121 @@ async function solicitarBajaProveedor(nombre){
   toast('✓ Solicitud de baja enviada');
 }
 
+let _solProvData = [];
+
 async function cargarSolicitudesProv(){
   const {data}=await sb.from('solicitudes_proveedores').select('*').eq('status','pendiente').order('created_at',{ascending:false});
+  _solProvData = data||[];
   const cont=document.getElementById('lista-sol-prov');
-  if(!data||!data.length){cont.innerHTML='<div class="empty">No hay solicitudes pendientes</div>';return;}
-  cont.innerHTML=data.map(s=>`<div class="prov-row prov-sol">
-    <div><div style="font-weight:500">${s.razon_social}</div><div style="font-size:11px;color:var(--sec)">${s.tipo==='alta'?'Alta':'Baja'} · RFC: ${s.rfc||'—'}</div></div>
+  if(!_solProvData.length){cont.innerHTML='<div class="empty">No hay solicitudes pendientes</div>';return;}
+  cont.innerHTML=_solProvData.map(s=>`<div class="prov-row prov-sol">
+    <div>
+      <div style="font-weight:500">${s.razon_social}</div>
+      <div style="font-size:11px;color:var(--sec)">${s.tipo==='alta'?'🆕 Alta':'🚫 Baja'} · RFC: ${s.rfc||'—'} ${s.zona?'· '+s.zona:''}</div>
+      ${s.constancia_url?`<a href="${s.constancia_url}" target="_blank" style="font-size:10px;color:var(--verde)">Ver CSF</a>`:''}
+    </div>
     <div style="font-size:11px">${s.rfc||'—'}</div>
     <div style="font-size:11px">${s.nombre_solicitante||'—'}</div>
     <div style="display:flex;gap:6px;">
-      <button class="btn btn-g" style="font-size:10px;padding:4px 9px;" onclick="aprobarProv('${s.id}','${s.tipo}','${s.razon_social}','${s.rfc||''}','${s.domicilio||''}',${s.iva_rate||0.08})">✓</button>
+      <button class="btn btn-g" style="font-size:10px;padding:4px 9px;" onclick="aprobarProvById('${s.id}')">✓ Aprobar</button>
       <button class="btn btn-r" style="font-size:10px;padding:4px 9px;" onclick="rechazarProv('${s.id}')">✗</button>
     </div>
   </div>`).join('');
 }
 
-async function aprobarProv(id,tipo,nombre,rfc,dom,iva){
-  if(tipo==='alta'){
-    await sb.from('proveedores_catalogo').insert([{razon_social:nombre,rfc,domicilio:dom,iva_rate:iva,activo:true}]);
+async function aprobarProvById(id){
+  const s = _solProvData.find(x=>x.id===id);
+  if(!s) return;
+  if(s.tipo==='alta'){
+    const {error}=await sb.from('proveedores_catalogo').insert([{
+      razon_social:s.razon_social, rfc:s.rfc||null, domicilio:s.domicilio||null,
+      iva_rate:s.iva_rate||0.08, activo:true,
+      zona:s.zona||null, constancia_url:s.constancia_url||null
+    }]);
+    if(error){toast('Error al insertar: '+error.message,true);return;}
   } else {
-    await sb.from('proveedores_catalogo').update({activo:false}).eq('razon_social',nombre);
+    await sb.from('proveedores_catalogo').update({activo:false}).eq('razon_social',s.razon_social);
   }
   await sb.from('solicitudes_proveedores').update({status:'aprobado'}).eq('id',id);
   toast('✓ Solicitud aprobada');
   cargarSolicitudesProv();cargarProveedoresLista();
 }
+
 async function rechazarProv(id){
   await sb.from('solicitudes_proveedores').update({status:'rechazado'}).eq('id',id);
   toast('Solicitud rechazada');cargarSolicitudesProv();
+}
+
+async function agregarProveedorDirecto(){
+  const nombre=document.getElementById('adm-np-nombre').value.trim().toUpperCase();
+  const rfc=document.getElementById('adm-np-rfc').value.trim().toUpperCase();
+  const dom=document.getElementById('adm-np-dom').value.trim();
+  const iva=parseFloat(document.getElementById('adm-np-iva').value);
+  const zona=document.getElementById('adm-np-zona').value||null;
+  if(!nombre||!rfc){toast('Razón Social y RFC son obligatorios',true);return;}
+  const btn=document.getElementById('btn-adm-np');
+  btn.innerHTML='<span class="spinner"></span>Guardando...';btn.disabled=true;
+  let csfUrl=null;
+  const csfFile=document.getElementById('adm-np-csf')?.files?.[0];
+  if(csfFile){
+    const ext=csfFile.name.split('.').pop();
+    const fname=Date.now()+'_'+rfc.replace(/[^A-Z0-9]/gi,'_')+'.'+ext;
+    const {data:upData,error:upErr}=await sb.storage.from('constancias').upload(fname,csfFile,{upsert:true});
+    if(!upErr){const {data:{publicUrl}}=sb.storage.from('constancias').getPublicUrl(fname);csfUrl=publicUrl;}
+  }
+  const {error}=await sb.from('proveedores_catalogo').insert([{
+    razon_social:nombre,rfc,domicilio:dom||null,iva_rate:iva,activo:true,zona,constancia_url:csfUrl
+  }]);
+  btn.innerHTML='+ Agregar al Catálogo';btn.disabled=false;
+  if(error){toast('Error: '+error.message,true);return;}
+  toast('✓ Proveedor '+nombre+' agregado al catálogo');
+  ['adm-np-nombre','adm-np-rfc','adm-np-dom'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('adm-np-csf').value='';
+  cargarProveedoresLista();
+}
+
+async function editarProveedor(id){
+  const p=proveedoresList.find(x=>x.id===id);
+  if(!p)return;
+  const nuevoNombre=prompt('Razón Social:',p.razon_social);
+  if(nuevoNombre===null)return;
+  const nuevoRfc=prompt('RFC:',p.rfc||'');
+  if(nuevoRfc===null)return;
+  const nuevaZona=prompt('Zona (vacío = Todo BC, M=Mexicali, T=Tijuana, E=Ensenada):',p.zona||'');
+  if(nuevaZona===null)return;
+  const nuevoIva=prompt('IVA (0.08 o 0.16):',p.iva_rate||0.08);
+  if(nuevoIva===null)return;
+  const {error}=await sb.from('proveedores_catalogo').update({
+    razon_social:nuevoNombre.trim().toUpperCase(),
+    rfc:nuevoRfc.trim().toUpperCase()||null,
+    zona:nuevaZona.trim()||null,
+    iva_rate:parseFloat(nuevoIva)||0.08
+  }).eq('id',id);
+  if(error){toast('Error: '+error.message,true);return;}
+  toast('✓ Proveedor actualizado');
+  cargarProveedoresLista();
+}
+
+async function reactivarProveedor(id,nombre){
+  if(!confirm('¿Reactivar a '+nombre+' en el catálogo?'))return;
+  const {error}=await sb.from('proveedores_catalogo').update({activo:true}).eq('id',id);
+  if(error){toast('Error: '+error.message,true);return;}
+  toast('✓ Proveedor reactivado');
+  cargarProveedoresBaja();cargarProveedoresLista();
+}
+
+async function cargarProveedoresBaja(){
+  const {data}=await sb.from('proveedores_catalogo').select('*').eq('activo',false).order('razon_social');
+  const sec=document.getElementById('sec-prov-baja');
+  const cont=document.getElementById('lista-prov-baja');
+  if(!data||!data.length){sec.style.display='none';return;}
+  sec.style.display='block';
+  cont.innerHTML=data.map(p=>`<div class="prov-row">
+    <div><div style="font-weight:500;color:var(--sec)">${p.razon_social}</div><div style="font-size:11px;color:var(--sec-l)">${p.rfc||'—'}</div></div>
+    <div style="font-size:11px;color:var(--sec)">${p.rfc||'—'}</div>
+    <div style="font-size:11px;color:var(--sec)">${p.zona||'Todo BC'}</div>
+    <div><button class="btn btn-g" style="font-size:10px;padding:4px 9px;" onclick="reactivarProveedor('${p.id}','${p.razon_social.replace(/'/g,'')}')">↩ Reactivar</button></div>
+  </div>`).join('');
 }
 
 // ══ USUARIOS ══
@@ -2063,7 +2179,7 @@ function showTab(tab){
     if(tb)tb.classList.toggle('active',t===tab);
   });
   if(tab==='usuarios'){cargarUsuarios();if(isAdmin)cargarSolicitudesUsr();}
-  if(tab==='proveedores'){cargarProveedoresLista();if(isAdmin)cargarSolicitudesProv();}
+  if(tab==='proveedores'){cargarProveedoresLista();if(isAdmin){cargarSolicitudesProv();cargarProveedoresBaja();}}
   if(tab==='presupuesto'){cargarPresupuestos();}
   if(tab==='reportes'){
     if(!document.getElementById('rp-desde').value) setPeriodo('bimestre');
