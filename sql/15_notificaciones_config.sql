@@ -53,8 +53,10 @@ ALTER TABLE solicitudes_usuarios ADD COLUMN IF NOT EXISTS email_notificacion TEX
 -- ── 3. Extensión pg_net (envío HTTP desde triggers) ──────────────
 CREATE EXTENSION IF NOT EXISTS pg_net;
 
--- ── 4. Función trigger actualizada (incluye email_solicitante y admin_emails) ──
+-- ── 4. Función trigger actualizada (lee URL y emails desde configuracion_sistema) ──
 -- Sustituye a la versión original de sql/13_webhook_notificaciones.sql
+-- Cambio clave: URL leída desde configuracion_sistema (clave='notif_webhook')
+-- en lugar de current_setting('app.notif_webhook') que requiere ALTER DATABASE superuser.
 CREATE OR REPLACE FUNCTION trg_fn_notificar_status()
 RETURNS trigger
 LANGUAGE plpgsql
@@ -65,8 +67,8 @@ DECLARE
   _url  text;
   _body jsonb;
 BEGIN
-  _url := current_setting('app.notif_webhook', true);
-  IF _url IS NULL OR _url = '' OR _url = 'TU_WEBHOOK_URL_AQUI' THEN
+  SELECT valor INTO _url FROM configuracion_sistema WHERE clave = 'notif_webhook';
+  IF _url IS NULL OR _url = '' THEN
     RETURN NEW;
   END IF;
 
@@ -118,9 +120,16 @@ CREATE TRIGGER trg_notificar_status
   FOR EACH ROW
   EXECUTE FUNCTION trg_fn_notificar_status();
 
--- ── 6. Activar webhook (hacer después de crear workflow en n8n) ──
--- Reemplazar con la URL real del webhook de n8n:
--- ALTER DATABASE postgres SET app.notif_webhook = 'https://n8n.../webhook/...';
+-- ── 6. Insertar URL del webhook de n8n ──
+-- URL ya aplicada en producción (Mayo 2026):
+INSERT INTO configuracion_sistema (clave, valor, descripcion) VALUES
+  ('notif_webhook',
+   'https://n8n-app-production-250a.up.railway.app/webhook/imss-bc-notificaciones',
+   'URL del webhook de n8n para notificaciones de ordenes (workflow: IMSS BC — Notificaciones Ordenes)')
+ON CONFLICT (clave) DO UPDATE SET valor = EXCLUDED.valor, updated_at = now();
+
+-- Para cambiar la URL en el futuro, basta con un UPDATE:
+-- UPDATE configuracion_sistema SET valor='nueva-url' WHERE clave='notif_webhook';
 
 -- ── Verificar ────────────────────────────────────────────────────
 -- SELECT tgname, tgenabled FROM pg_trigger WHERE tgname='trg_notificar_status';
